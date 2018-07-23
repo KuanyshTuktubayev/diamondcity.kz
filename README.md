@@ -1,0 +1,1 @@
+# diamondcity.kz
