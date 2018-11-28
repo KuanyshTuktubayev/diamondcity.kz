@@ -1,0 +1,121 @@
+<div>
+	
+	{{#if adminLogin}}
+	
+	<h2>Главная страница</h2><br />
+	<p><a href="/exadm">Выйти из админки ({{adminLogin}})</a></p>
+	<div style='float: left; width: 10%; background-color: orange;'>
+		<p><a href="/editadmpwd">Смена пароля</a></p>
+		<p id="editprodmenu"><a href="/admproducts">Продукция</a></p>
+		<p id="editclientmenu"><a href="/admclients">Клиенты</a></p>
+	</div>
+	<div id='admarea' style='float: left; width: 90%; background-color: transparent;'>
+		{{#if clientList}}
+			<table>
+				<tbody id="client_items">
+					<th>ID</th><th>Фамилия</th><th>Имя</th><th>Отчество</th>
+					{{#each clientList}}
+					<tr>
+						<td>{{this.ID}}</td>
+						<td>{{this.Lastname}}</td>
+						<td>{{this.Firstname}}</td>
+						<td>{{this.Middlename}}</td>
+					</tr>
+					{{/each}}
+				</tbody>
+			</table>
+		{{else}}
+			{{#if productList}}
+				<table>
+					<tbody id="prod_items">
+						<th>ID</th>
+						<th>Цена</th>
+						<th>Название</th>
+						<th>Описание</th>
+						<th>Главная картинка</th>
+						{{#each productList}}
+							<tr>
+								<td>{{this.ID}}</td>
+								<td>{{this.Price}}</td>
+								<td>{{this.Name}}</td>
+								<td>{{this.Descr}}</td>
+								<td><img src="{{this.ImgPath}}" /></td>
+							</tr>
+						{{/each}}
+					</tbody>
+				</table>
+			{{else}}
+				<p>Выберите меню</p>
+			{{/if}}
+		{{/if}}
+	</div>
+	<script type="text/javascript">
+		/*$("#editprodmenu").click(function(){
+			$('#admarea').text("Функция редактирования продукции находится в процессе разработки");
+			$.ajax({
+				method: "GET",
+				url: "/admproducts"
+				//,data: { id: sClientID, Lastname: sLastname, Firstname: sFirstname, Middlename: sMiddlename, Email: sEmail, CountryCitz: sCountryCitz, IIN: sIIN, PasspNum: sPasspNum, Birthdate: dBirthdate, Gender: bGender }
+			})
+			.done(function( result ) {
+				//$("#admarea").empty().append( result );
+				$("#admarea").empty().load( result );
+			});
+		});*/
+
+		/*$("#editclientmenu").click(function(){
+			$('#admarea').text("Функция редактирования клиентов находится в процессе разработки");
+			$.ajax({
+				method: "GET",
+				url: "/admclients"
+			})
+			.done(function( result ) {
+				$("#admarea").empty().load( result );
+			});
+		});*/
+		
+		$(document).ready(function(){
+		$('#test_p').html = 'doc ready';
+		/*$.ajax({
+			url: '/loadprods',
+			method: "GET",
+			//data: {},
+			dataType: "json",
+			//cache: false,
+			success: function (data) {
+				 var tbl = "<th>Картина</th><th>Продукт</th><th>Цена</th><th>Описание</th>";
+				$.each(data, function (i, val) {
+					var tr = "<tr>" +
+						"<td><img src='./wp-content/uploads/prods/"+ val.ImgPath + "' /></td>" +
+						"<td>"+ val.name + "</td>" +
+						"<td>"+ val.price + "</td>" +
+						"<td>"+ val.descr + "</td>" +
+						"</tr>";
+					$(tbl+tr).appendTo("#prod_items");
+				});
+			}
+		});*/
+	});
+	</script>
+	
+	{{else}}
+	
+	<h2>Вход:</h2>
+	<form class="form-inline" role="form" action="/admin" method="post" name="AdmLoginForm">
+		<div class="form-group">
+			<label class="sr-only" for="admlogin">Логин</label>
+			<input type="text" name="admlogin" id="admlogin" placeholder="логин" />
+		</div>
+		<div class="form-group">
+			<label class="sr-only" for="admpwd">Пароль</label>
+			<input type="password" name="admpwd" id="admpwd" placeholder="пароль" />
+		</div>
+		<br />
+		<input type="submit" class="btn btn-primary" id="btnAdmLogin" name="btnAdmLogin" value="Войти" />
+	</form>
+	
+	{{/if}}
+	
+</div>
+
+

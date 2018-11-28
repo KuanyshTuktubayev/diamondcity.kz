@@ -1,0 +1,41 @@
+<div id="ClientListDiv">
+	edit client page
+	<p id='test_p'></p>
+	<table>
+		<tbody id="client_items">
+			<th>ID</th><th>Фамилия</th><th>Имя</th><th>Отчество</th>
+			{{#each clients}}
+			<tr>
+				<td>{{this.ID}}</td>
+				<td>{{this.Lastname}}</td>
+				<td>{{this.Firstname}}</td>
+				<td>{{this.Middlename}}</td>
+			</tr>
+			{{/each}}
+		</tbody>
+	</table>
+</div>
+<script>
+	$(document).ready(function(){
+		$('#test_p').html = 'doc ready';
+		/*$.ajax({
+			url: '/loadclients',
+			method: "GET",
+			data: {},
+			dataType: "json",
+			cache: false,
+			success: function (data) {
+				 var tbl = "<th>ID</th><th>Фамилия</th><th>Имя</th><th>Отчество</th>";
+				$.each(data, function (i, val) {
+					var tr = "<tr>" +
+						"<td>"+ val.ID + "</td>" +
+						"<td>"+ val.lastname + "</td>" +
+						"<td>"+ val.firstname + "</td>" +
+						"<td>"+ val.middlename + "</td>" +
+						"</tr>";
+					$(tbl+tr).appendTo("#client_items");
+				});
+			}
+		});*/
+	});
+</script>

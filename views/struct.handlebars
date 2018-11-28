@@ -1,0 +1,22 @@
+<div>
+	<table class="table">
+		<th>Уровень</th>
+		<th>ID спонсора</th>
+		<th>Фамилия спонсора</th>
+		<th>Имя спонсора</th>
+		<th>ID клиента</th>
+		<th>Фамилия клиента</th>
+		<th>Имя клиента</th>
+		{{#each items}}
+		<tr>
+			<td>{{ this.lev }}</td>
+			<td>{{ this.IDClParent }}</td>
+			<td>{{ this.LastnameP }}</td>
+			<td>{{ this.FirstnameP }}</td>
+			<td>{{ this.IDClient }}</td>
+			<td>{{ this.Lastname }}</td>
+			<td>{{ this.Firstname }}</td>
+		</tr>
+		{{/each}}
+	</table>
+</div>

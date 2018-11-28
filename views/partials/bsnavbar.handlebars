@@ -1,0 +1,84 @@
+{{#if isAdmin}}
+<div class="hiddenMenu">
+	<!--
+	<li class="menu-button-close">
+		<i class="fa fa-close"></i>
+	</li>
+	<ul>
+		<li><a href="#editadmpwd">Смена пароля</a></li>
+		<li><a href="/editproduct">ПРОДУКЦИЯ</a></li>
+		<li><a href="/editclient">Клиенты</a></li>
+	</ul>
+	-->
+</div>
+{{else}}
+<div class="hiddenMenu">
+	<li class="menu-button-close">
+		<i class="fa fa-close"></i>
+	</li>
+	<ul>
+		<li><a href="#about_company">О КОМПАНИИ</a></li>
+		<li><a href="#product">ПРОДУКЦИЯ</a></li>
+		<li><a href="#marketing">МАРКЕТИНГ</a></li>
+		<li><a href="#price-list">ПРАЙС-ЛИСТ</a></li>
+		<li><a href="#feeds">ОТЗЫВЫ</a></li>
+		<li><a href="#contact">КОНТАКТЫ</a></li>
+		<!--<li><a href="#cab">Кабинет</a></li>-->
+		<li id="logindivlink">{{#if clientID}}<a href="/cab">{{else}}<a href="#">{{/if}}Кабинет</a></li>
+	</ul>
+</div>
+{{/if}}
+
+<div class="overlay"></div>
+<li class="menu-button">
+	<span></span>
+	<span></span>
+	<span></span>
+</li>
+
+	<header class="_header">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-3 col-md-2 col-sm-1 col-xs-12 _header_logo wow flipInY">
+					<a href="/"><img src="./wp-content/themes/mytheme/img/logo/logo.png" alt="logo"></a>
+				</div>
+				<div class="col-lg-9 col-md-10 col-sm-11 col-xs-12">
+					<nav class="_header_menu wow bounceInRight">
+						<button type="button" class="navbar-toggle">
+					    <span class="icon-bar"></span>
+					    <span class="icon-bar"></span>
+					    <span class="icon-bar"></span>
+						</button>
+						
+						{{#if isAdmin}}
+						<h1><a href="/admin">Административная часть</a></h1>
+						{{else}}
+							{{#if clientID}}
+							<h1><a href="/cab">Кабинет {{clientID}}</a></h1>
+							{{else}}
+							<ul>
+								<li><a href="#about_company">О компании</a></li>
+								<li><a href="#product">Продукция</a></li>
+								<li><a href="#marketing">Маркетинг</a></li>
+								<li><a href="#price-list">Прайс-лист</a></li>
+								<li><a href="#feeds">Отзывы</a></li>
+								<li><a href="#contact">Контакты</a></li>
+								<!--<li><a href="#cab">Кабинет</a></li>-->
+								<li id="logindivlink2">{{#if clientID}}<a href="/cab">Кабинет</a>{{else}}<a href="#">Кабинет</a>{{/if}}</li>
+							</ul>
+							{{/if}}
+						{{/if}}
+						
+					</nav>
+				</div>
+			</div>
+		</div>
+	</header>
+{{#if clientID}}
+<div class="container">
+	<div class="row">
+		<div class="col-sm-11"><a href="/cab">Кабинет {{clientID}}</a></div>
+		<div class="col-sm-1"><a href="/exss">Выйти</a></div>
+	</div>
+</div>
+{{/if}}

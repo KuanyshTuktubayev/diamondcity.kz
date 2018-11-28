@@ -1,0 +1,29 @@
+<div>
+	<div id="loginMenu">
+		<span id="loginFrm">Вход</span> | <span id="regFrm">Регистрация</span>
+	</div>
+	<div id="loginForm">
+		<form action="/cab" method="post">
+			<label for="clientID">Идентификатор</label>
+			<input type="text" name="clientID">
+			<input type="submit" name="btnLogin" value="Войти">
+		</form>
+	</div>
+	<div id="regForm" hidden>
+		<form action="/cab" method="post">
+			<label for="clientID">Идентификатор</label>
+			<input type="text" name="clientID">
+			<input type="submit" name="btnReg" value="Регистрация">
+		</form>
+	</div>
+</div>
+<script>
+	$("#loginFrm").click(function() {
+		$("#loginForm").show();
+		$("#regForm").hide();
+	});
+	$("#regFrm").click(function() {
+		$("#loginForm").hide();
+		$("#regForm").show();
+	});
+</script>

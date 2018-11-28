@@ -1,0 +1,46 @@
+<div id="ProductListDiv">
+	edit product page
+	<p id='test_p'></p>
+	<table>
+		<tbody id="prod_items">
+			<th>ID</th>
+			<th>Цена</th>
+			<th>Название</th>
+			<th>Описание</th>
+			<th>Главная картинка</th>
+			{{#each proditems}}
+				<tr>
+					<td>{{this.ID}}</td>
+					<td>{{this.Price}}</td>
+					<td>{{this.Name}}</td>
+					<td>{{this.Descr}}</td>
+					<td><img src="./wp-content/uploads/prods/{{this.ImgPath}}" /></td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+</div>
+<script>
+	$(document).ready(function(){
+		$('#test_p').html = 'doc ready';
+		/*$.ajax({
+			url: '/loadprods',
+			method: "GET",
+			data: {},
+			dataType: "json",
+			cache: false,
+			success: function (data) {
+				 var tbl = "<th>Картина</th><th>Продукт</th><th>Цена</th><th>Описание</th>";
+				$.each(data, function (i, val) {
+					var tr = "<tr>" +
+						"<td><img src='./wp-content/uploads/prods/"+ val.ImgPath + "' /></td>" +
+						"<td>"+ val.name + "</td>" +
+						"<td>"+ val.price + "</td>" +
+						"<td>"+ val.descr + "</td>" +
+						"</tr>";
+					$(tbl+tr).appendTo("#prod_items");
+				});
+			}
+		});*/
+	});
+</script>
