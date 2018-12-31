@@ -79,7 +79,27 @@
 		</div>
 	</div>
 	<p style="font-size: 10px; color: grey;">Внимание! В данный момент функционал "личного кабинета" находится в процессе разработки, поэтому схема МЛМ-структуры пока отображается "криво". Ориентировочный срок исправлния схемы - начало 2019 года.</p>
-	<p>Количество людей в вашей MLM-структуре (для получения бонуса): {{#each selfItems}} <b>{{this.CountChilds}}</b> {{/each}}</p>
+	<div id="bonusTable">
+	<p>Ваши бонусы (если были):</p>
+	<table class="table">
+		<th>Вход</th>
+		<th>Дата бонуса</th>
+		<th>Сумма</th>
+		<th>Людей было в структуре</th>
+		<th>Выплата</th>
+		{{#each bonusList}}
+		<tr>
+			<td>{{ this.PlanTypeName }}</td>
+			<td>{{ this.clBonusDate }}</td>
+			<td>{{ this.Amount }}</td>
+			<td>{{ this.ChildCount }}</td>
+			<td>{{ this.PayedLabel }}</td>
+		</tr>
+		{{/each}}
+	</table>
+	</div>
+	<br />
+	<p class="text-success">Количество людей в вашей MLM-структуре (для получения бонуса): {{#each selfItems}} <b>{{this.CountChilds}}</b> {{/each}}</p>
 	<div id="structTable">
 	<table class="table">
 		<th>Вход</th>

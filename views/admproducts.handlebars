@@ -1,8 +1,20 @@
 <div id="ProductListDiv">
 	edit product page
 	<p id='test_p'></p>
+	
+	{{#each proditems}}
+		<div>
+			<span id="productID_{{this.ID}}" hidden>{{this.ID}}</span>
+			<img id="productImg_{{this.ID}}" src="./wp-content/uploads/prods/{{this.ImgPath}}" />
+			<p id="productName_{{this.ID}}">{{this.Name}}</p>
+			<p><span>Цена: </span><span id="productPrice_{{this.ID}}">{{this.Price}}</span></p>
+			<p id="productDescr_{{this.ID}}">{{this.Descr}}</p>
+		</div>
+		<hr>
+	{{/each}}
+	
 	<table>
-		<tbody id="prod_items">
+		<tbody id="prod_items" class="table">
 			<th>ID</th>
 			<th>Цена</th>
 			<th>Название</th>
