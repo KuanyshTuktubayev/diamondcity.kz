@@ -424,7 +424,12 @@ app.get('/cab', function(req, res) {
 				nPlanTypeID2 = 0;
 				nPlanTypeID4 = 4;
 			}
-			res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, items: rows, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4});
+			let sSQLBonus = "select b.ID, b.IDClient, b.IDPlanType, b.BonusDate, DATE_FORMAT(b.BonusDate, '%Y-%m-%d') clBonusDate, b.IsPayed, case when b.IsPayed = 1 then 'Выплачен' else 'Не выплачен' end PayedLabel, b.Amount, b.ChildCount, pt.Name as PlanTypeName from Bonuses b join PlanType pt on pt.ID = b.IDPlanType "
+				+"WHERE b.IDClient = " + nClientID + " and b.IDPlanType = " + nPlanTypeID + "";
+			let queryBonus = db.query(sSQLBonus, function(errBonus, rowsBonus){
+				if(errBonus) {throw errBonus;}
+				res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, items: rows, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4, bonusList: rowsBonus});
+			});
 		});
 	});
 });
@@ -586,7 +591,12 @@ app.post('/cab', function(req, res, next) {
 				nPlanTypeID2 = 0;
 				nPlanTypeID4 = 4;
 			}
-			res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, items: rows, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4});
+			let sSQLBonus = "select b.ID, b.IDClient, b.IDPlanType, b.BonusDate, DATE_FORMAT(b.BonusDate, '%Y-%m-%d') clBonusDate, b.IsPayed, case when b.IsPayed = 1 then 'Выплачен' else 'Не выплачен' end PayedLabel, b.Amount, b.ChildCount, pt.Name as PlanTypeName from Bonuses b join PlanType pt on pt.ID = b.IDPlanType "
+				+"WHERE b.IDClient = " + nClientID + " and b.IDPlanType = " + nPlanTypeID + "";
+			let queryBonus = db.query(sSQLBonus, function(errBonus, rowsBonus){
+				if(errBonus) {throw errBonus;}
+				res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, items: rows, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4, bonusList: rowsBonus});
+			});
 		});
 	});
 });
