@@ -1,231 +1,417 @@
 <div class="container">
-	<!--<a href="/exss">Выйти</a>-->
 	<h3>Личный кабинет клиента с идентификатором {{clientID}}</h3>
-	<p>Ваши данные:</p>
-	<div id="divPersonData">
-	{{>persondata}}
+	{{#each selfItems}}
+		<p><b>{{ this.ClientTitle }}</b> {{this.Lastname}} {{this.Firstname}} {{this.Middlename}}</p>
+	{{/each}}
+	<div>
+		<p id="profile"><a href="#profile">Профиль</a></p>
+		<p id="chgpwd"><a href="#chgpwd">Пароль</a></p>
+		<p id="struct"><a href="#struct">MLM-структура</a></p>
 	</div>
-	<br />
-	<form class="form-inline" role="form">
-		<div class="form-group">
-			<label class="sr-only" for="oldPwd">Текущий пароль</label>
-			<input type="password" class="form-control" id="oldPwd" placeholder="текущий пароль">
+	<div id="divPersonData" style="display: none;">
+		{{>persondata}}
+	</div>
+	<div id="frmChgPwd" style="display: none;">
+		<form class="form-inline" role="form">
+			<div class="form-group">
+				<label class="sr-only" for="oldPwd">Текущий пароль</label>
+				<input type="password" class="form-control" id="oldPwd" placeholder="текущий пароль" />
+			</div>
+			<div class="form-group">
+				<label class="sr-only" for="newPwd">Новый пароль</label>
+				<input type="password" class="form-control" id="newPwd" placeholder="новый пароль" />
+			</div>
+			<div class="form-group">
+				<label class="sr-only" for="newPwdAgain">Новый пароль (еще раз)</label>
+				<input type="password" class="form-control" id="newPwdAgain" placeholder="новый пароль (еще)" />
+			</div>
+			<button type="button" class="btn btn-primary" id="btnNewPwd">Сменить пароль</button><br />
+			<p id="pwdChangeResult" class="bg-info"></p>
+		</form>
+	</div>
+	<div id="divStruct" {{#iff planTypeID0 '==' 0}} style="display: none;" {{/iff}}>
+		<p style="font-size: 10px; color: grey;">Внимание! В данный момент функционал "личного кабинета" находится в процессе разработки.</p>
+		<p style="font-size: 13px; color: darkblue;"><i>Согласно правилам компании, премию за МЛМ-структуру вы будете получать каждый раз, когда в вашей структуре появятся 128 новых клиентов, при этом, нужно учесть условия - в 1-уровне должно быть более 2 новых веток, во 2-уровне должно быть более 2 новых веток, в 3-уровне должно быть более 2 новых веток, а начиная с 4-уровня учитываются все новые ветки. Если в любом уровне новых веток будет меньше, чем нужно, то дальнейший подсчет остановится.</i></p>
+		<div class="row">
+			<div class="col col-lg-2">
+				<p><strong>Ваша структура:</strong></p>
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioStruct" id="radioStructTbl" value="table" />Таблица
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioStruct" id="radioStructChrt" value="chart" />График
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input type="radio" name="radioStruct" id="radioStructTree" value="tree" checked />Дерево
+					</label>
+				</div>
+			</div>
+			<div class="col col-lg-2">
+				<p><strong>Вид входа:</strong></p>
+				<div class="radio">
+					<label>
+						<a href="/cab?pt=1">
+							{{#if planTypeID1 }}
+								<input type="radio" name="radioPlanType" id="radioPlanType1" value="1" form="formPersonData" checked />20'000
+							{{else}}
+								<input type="radio" name="radioPlanType" id="radioPlanType1" value="1" form="formPersonData" />20'000
+							{{/if}}
+						</a>
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<a href="/cab?pt=2">
+							{{#if planTypeID2 }}
+								<input type="radio" name="radioPlanType" id="radioPlanType2" value="2" form="formPersonData" checked />50'000
+							{{else}}
+								<input type="radio" name="radioPlanType" id="radioPlanType2" value="2" form="formPersonData" />50'000
+							{{/if}}
+						</a>
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<a href="/cab?pt=4">
+							{{#if planTypeID4 }}
+								<input type="radio" name="radioPlanType" id="radioPlanType4" value="4" form="formPersonData" checked />200'000
+							{{else}}
+								<input type="radio" name="radioPlanType" id="radioPlanType4" value="4" form="formPersonData" />200'000
+							{{/if}}
+						</a>
+					</label>
+				</div>
+			</div>
 		</div>
-		<div class="form-group">
-			<label class="sr-only" for="newPwd">Новый пароль</label>
-			<input type="password" class="form-control" id="newPwd" placeholder="новый пароль">
+		<div id="divBonusInfo">
+			<p>-----------------</p>
+			<p><strong>История ваших бонусов</strong> (по выбранному "виду входа"):</p>
+			{{#if bonusItems}}
+				<table style="border: 1px solid black">
+					<tr>
+						<td>
+							<ul>
+								{{#each bonusItems}}
+									<li>{{ this.BonusDate }}: {{ this.Amount }} KZT</li>
+								{{/each}}
+							</ul>
+						</td>
+					</tr>
+				</table>
+			{{else}}
+				<p><i>Вы не получали бонус за новых 128 человек в МЛМ-структуре. Но когда получите, здесь отобразится таблица с датами и суммами бонусов</i></p>
+			{{/if}}
+			<p>-----------------</p>
+			{{#each selfItems}}
+				<p style="color: grey;">Всего людей в вашей MLM-структуре (<i>без учета условий</i>): <b>{{#if this.CountStr }} {{this.CountStr}} {{else}} 0 {{/if}}</b></p>
+				<p>Количество людей в вашей MLM-структуре (для получения следующего бонуса): <b>{{#if this.CountChilds }}{{this.CountChilds}} {{else}} 0 {{/if}}</b></p>
+			{{/each}}
 		</div>
-		<div class="form-group">
-			<label class="sr-only" for="newPwdAgain">Новый пароль (еще раз)</label>
-			<input type="password" class="form-control" id="newPwdAgain" placeholder="новый пароль (еще)">
+		<div id="divSalary">
+			<p>-----------------</p>
+			<p><strong>Ваша зарплата</strong> (по выбранному "виду входа"):</p>
+			{{#if salaryItems}}
+				<table class="table table-bordered table-sm table-striped">
+					<thead class="thead-light">
+						<th scope="col">Период</th>
+						<th scope="col">Сумма</th>
+					</thead>
+					<tbody>
+					{{#each salaryItems}}
+						<tr>
+							<td>
+								{{ this.PeriodFrom }} - {{ this.PeriodTo }}
+							</td>
+							<td>
+								{{ this.Amount }} KZT
+							</td>
+						</tr>
+					{{/each}}
+					</tbody>
+				</table>
+			{{else}}
+				<p style="color: grey;"><i>Нет данных о зарплате</i></p>
+			{{/if}}
+			<p>-----------------</p>
 		</div>
-		<button type="button" class="btn btn-primary" id="btnNewPwd">Сменить пароль</button><br />
-		<p id="pwdChangeResult" class="bg-info"></p>
-	</form>
-	<p>Согласно правилам компании, премию за МЛМ-структуру вы будете получать каждый раз, когда в вашей структуре появятся 128 новых клиентов, при этом, нужно учесть условия - в первых трех уровнях обязательно должно быть более 2 новых веток, а начиная с 4-уровня учитываются все новые ветки.</p>
-	<div class="form-group">
-		<p>Ваша структура:</p>
-		<div class="radio">
-			<label>
-				<input type="radio" name="radioStruct" id="radioStructTbl" value="table" checked>Таблица
-			</label>
+		<div id="structTable">
+			<table class="table">
+				<th>Вход</th>
+				<th>Уровень</th>
+				<th>ID спонсора</th>
+				<th>Фамилия спонсора</th>
+				<th>Имя спонсора</th>
+				<th>ID клиента</th>
+				<th>Фамилия клиента</th>
+				<th>Имя клиента</th>
+				{{#each structItems}}
+					<tr>
+						<td>{{ this.PlanTypeName }}</td>
+						<td>{{ this.lev }}</td>
+						<td>{{ this.IDClParent }}</td>
+						<td>{{ this.LastnameP }}</td>
+						<td>{{ this.FirstnameP }}</td>
+						<td>{{ this.IDClient }}</td>
+						<td>{{ this.Lastname }}</td>
+						<td>{{ this.Firstname }}</td>
+					</tr>
+				{{/each}}
+			</table>
 		</div>
-		<div class="radio">
-			<label>
-				<input type="radio" name="radioStruct" id="radioStructChrt" value="chart">График
-			</label>
+		<div id="structTree">
 		</div>
 	</div>
-	<div class="form-group">
-		<p>Вид входа:</p>
-		<div class="radio">
-			<label>
-				<a href="/cab?pt=1">
-				{{#if planTypeID1 }}
-				<input type="radio" name="radioPlanType" id="radioPlanType1" value="1" form="formPersonData" checked>20'000
-				{{else}}
-				<input type="radio" name="radioPlanType" id="radioPlanType1" value="1" form="formPersonData">20'000
-				{{/if}}
-				</a>
-			</label>
-		</div>
-		<div class="radio">
-			<label>
-				<a href="/cab?pt=2">
-				{{#if planTypeID2 }}
-				<input type="radio" name="radioPlanType" id="radioPlanType2" value="2" form="formPersonData" checked>50'000
-				{{else}}
-				<input type="radio" name="radioPlanType" id="radioPlanType2" value="2" form="formPersonData">50'000
-				{{/if}}
-				</a>
-			</label>
-		</div>
-		<!--
-		<div class="radio">
-			<label>
-				<input type="radio" name="radioPlanType" id="radioPlanType3" value="3">80'000
-			</label>
-		</div> -->
-		<div class="radio">
-			<label>
-				<a href="/cab?pt=4">
-				{{#if planTypeID4 }}
-				<input type="radio" name="radioPlanType" id="radioPlanType4" value="4" form="formPersonData" checked>200'000
-				{{else}}
-				<input type="radio" name="radioPlanType" id="radioPlanType4" value="4" form="formPersonData">200'000
-				{{/if}}
-				</a>
-			</label>
-		</div>
+</div>
+<div id="divStructChart" {{#iff planTypeID0 '==' 0}} style="display: none;" {{/iff}}>
+	<i id="ChartTitle" style="color: grey;">Желтым цветом выделяются клиенты, под которыми есть другие клиенты, кликните и увидите их.</i>
+	<div class="chart" style="width: 100%; min-height: 480px;" id="OrganiseChart-simple">
 	</div>
-	<p style="font-size: 10px; color: grey;">Внимание! В данный момент функционал "личного кабинета" находится в процессе разработки, поэтому схема МЛМ-структуры пока отображается "криво". Ориентировочный срок исправлния схемы - начало 2019 года.</p>
-	<div id="bonusTable">
-	<p>Ваши бонусы (если были):</p>
-	<table class="table">
-		<th>Вход</th>
-		<th>Дата бонуса</th>
-		<th>Сумма</th>
-		<th>Людей было в структуре</th>
-		<th>Выплата</th>
-		{{#each bonusList}}
-		<tr>
-			<td>{{ this.PlanTypeName }}</td>
-			<td>{{ this.clBonusDate }}</td>
-			<td>{{ this.Amount }}</td>
-			<td>{{ this.ChildCount }}</td>
-			<td>{{ this.PayedLabel }}</td>
-		</tr>
-		{{/each}}
-	</table>
-	</div>
-	<br />
-	<p class="text-success">Количество людей в вашей MLM-структуре (для получения бонуса): {{#each selfItems}} <b>{{this.CountChilds}}</b> {{/each}}</p>
-	<div id="structTable">
-	<table class="table">
-		<th>Вход</th>
-		<th>Уровень</th>
-		<th>ID спонсора</th>
-		<th>Фамилия спонсора</th>
-		<th>Имя спонсора</th>
-		<th>ID клиента</th>
-		<th>Фамилия клиента</th>
-		<th>Имя клиента</th>
-		{{#each items}}
-		<tr>
-			<td>{{ this.PlanTypeName }}</td>
-			<td>{{ this.lev }}</td>
-			<td>{{ this.IDClParent }}</td>
-			<td>{{ this.LastnameP }}</td>
-			<td>{{ this.FirstnameP }}</td>
-			<td>{{ this.IDClient }}</td>
-			<td>{{ this.Lastname }}</td>
-			<td>{{ this.Firstname }}</td>
-		</tr>
-		{{/each}}
-	</table>
-	</div>
-	<div class="chart" id="OrganiseChart-simple">
-	</div>
-	<script src="./Treant/vendor/raphael.js"></script>
-	<script src="./Treant/Treant.js"></script>
-	<!--<script src="./Treant/super-simple.js"></script>-->
-	<!--<script src="./Treant/collapsable.js"></script>-->
-    <!--<script src="./Treant/vendor/jquery.min.js"></script>-->
-    <script src="./Treant/vendor/jquery.easing.js"></script>
-	
-	<script>
-		$(document).ready(function(){
-			var isChStruct = $('#radioStructTbl').prop('checked');
-			if(isChStruct){
-				$("#structTable").show();
-				$("#OrganiseChart-simple").hide();
-			}
-			else {
-				$("#structTable").hide();
-				$("#OrganiseChart-simple").show();
-				new Treant( simple_chart_config );
-			}
-		});
-		
-		$("#btnNewPwd").click(function(){
-			var sClientID = $("#txClientID").val();
-			var sOldPwd = $("#oldPwd").val();
-			var sNewPwd = $("#newPwd").val();
-			var sNewPwdAgain = $("#newPwdAgain").val();
-			$('#pwdChangeResult').text("Функция смены пароля находится в процессе разработки");
-			$.ajax({
-			  method: "POST",
-			  url: "/newpwd",
-			  data: { id: sClientID, oldpwd: sOldPwd, newpwd: sNewPwd, newpwdagain: sNewPwdAgain }
-			})
-			  .done(function( result ) {
-				$("#pwdChangeResult").empty().append( result );
-			  });
-		});
-		
-		$("#btnSaveAnketa").click(function(){
-			var sClientID = $("#txClientID").val();
-			var sLastname = $("#txLastname").val();
-			var sFirstname = $("#txFirstname").val();
-			var sMiddlename = $("#txMiddlename").val();
-			var dBirthdate = $("#dtBirthdate").val();
-			var bGender = $('input[name=rbGender]:checked').val();
-			var sEmail = $("#txEmail").val();
-			var sCountryCitz = $("#txCountryCitz").val();
-			var sIIN = $("#txIIN").val();
-			var sPasspNum = $("#txPasspNum").val();
-			
-			$('#anketaChangeResult').text("Функция сохранения анкеты находится в процессе разработки");
-			$.ajax({
-			  method: "POST",
-			  url: "/updanketa",
-			  data: { id: sClientID, Lastname: sLastname, Firstname: sFirstname, Middlename: sMiddlename, Email: sEmail, CountryCitz: sCountryCitz, IIN: sIIN, PasspNum: sPasspNum, Birthdate: dBirthdate, Gender: bGender }
-			})
-			  .done(function( result ) {
-				$("#anketaChangeResult").empty().append( result );
-			  });
-		});
-		
-		$("#radioStructTbl").click(function(){
+</div>
+<script src="./Treant/vendor/raphael.js"></script>
+<script src="./Treant/Treant.js"></script>
+<!--<script src="./Treant/super-simple.js"></script>-->
+<!--<script src="./Treant/collapsable.js"></script>-->
+<!--<script src="./Treant/vendor/jquery.min.js"></script>-->
+<script src="./Treant/vendor/jquery.easing.js"></script>
+
+<script>
+	$(document).ready(function(){
+		var isTblStruct = $('#radioStructTbl').prop('checked');
+		if(isTblStruct){
 			$("#structTable").show();
 			$("#OrganiseChart-simple").hide();
-		});
-		$("#radioStructChrt").click(function(){
+			$("#ChartTitle").hide();
+			$("#structTree").hide();
+		}
+		var isChStruct = $('#radioStructChrt').prop('checked');
+		if(isChStruct){
 			$("#structTable").hide();
 			$("#OrganiseChart-simple").show();
-			
-			var sClientID = $("#txClientID").val();
-			var sPlanID = $('input[name=radioPlanType]:checked').val()
-			console.log('sPlanID='+sPlanID);
-			$.get("/getChartData?cid="+sClientID+"&pt="+sPlanID, function(data, status){
-				new Treant( data );
-			});
-		});
-		/*$("#radioPlanType1").click(function(){
-			ChoicePlantype(1);
-		});
-		$("#radioPlanType2").click(function(){
-			ChoicePlantype(2);
-		});
-		$("#radioPlanType4").click(function(){
-			ChoicePlantype(4);
-		});
-		function ChoicePlantype(pIDPlanType){
-			var sClientID = $("#txClientID").val();
-			var sPlanID = $("radioPlanType").val();
-			$("#structTable").empty().append( "<div>Функционал в разработке "+pIDPlanType+"</div>" );
-			$.ajax({
-			  method: "POST",
-			  url: "/cab"
-			});
-			  .done(function( result ) {
-				$("#structTable").hide();
-				$("#OrganiseChart-simple").hide();
-				$("#structTable").empty().append( result );
-				$("#structTable").show();
-				$("#OrganiseChart-simple").hide();
-			  });
-		}*/
-	</script>
+			$("#ChartTitle").show();
+			$("#structTree").hide();
+			//new Treant( simple_chart_config );
+			GetStructChart();
+		}
+		var isTrStruct = $('#radioStructTree').prop('checked');
+		if(isTrStruct){
+			$("#structTable").hide();
+			$("#OrganiseChart-simple").hide();
+			$("#ChartTitle").hide();
+			$("#structTree").show();
+			GetStructTree();
+		}
+	});
 
-</div>
+	$("#profile").click(function(){
+		document.getElementById("divPersonData").style.display = "initial";
+		document.getElementById("frmChgPwd").style.display = "none";
+		document.getElementById("divStruct").style.display = "none";
+		document.getElementById("divStructChart").style.display = "none";
+	});
+	$("#chgpwd").click(function(){
+		document.getElementById("divPersonData").style.display = "none";
+		document.getElementById("frmChgPwd").style.display = "initial";
+		document.getElementById("divStruct").style.display = "none";
+		document.getElementById("divStructChart").style.display = "none";
+	});
+	$("#struct").click(function(){
+		document.getElementById("divPersonData").style.display = "none";
+		document.getElementById("frmChgPwd").style.display = "none";
+		document.getElementById("divStruct").style.display = "initial";
+		document.getElementById("divStructChart").style.display = "initial";
+	});
+
+	$("#btnNewPwd").click(function(){
+		var sClientID = $("#txClientID").val();
+		var sOldPwd = $("#oldPwd").val();
+		var sNewPwd = $("#newPwd").val();
+		var sNewPwdAgain = $("#newPwdAgain").val();
+		$('#pwdChangeResult').text("Функция смены пароля находится в процессе разработки");
+		$.ajax({
+			method: "POST",
+			url: "/newpwd",
+			data: { id: sClientID, oldpwd: sOldPwd, newpwd: sNewPwd, newpwdagain: sNewPwdAgain }
+		})
+			.done(function( result ) {
+			$("#pwdChangeResult").empty().append( result );
+		});
+	});
+
+	$("#btnSaveAnketa").click(function(){
+		var sClientID = $("#txClientID").val();
+		var sLastname = $("#txLastname").val();
+		var sFirstname = $("#txFirstname").val();
+		var sMiddlename = $("#txMiddlename").val();
+		var dBirthdate = $("#dtBirthdate").val();
+		var bGender = $('input[name=rbGender]:checked').val();
+		var sEmail = $("#txEmail").val();
+		var sCountryCitz = $("#txCountryCitz").val();
+		var sIIN = $("#txIIN").val();
+		var sPasspNum = $("#txPasspNum").val();
+
+		$('#anketaChangeResult').text("Функция сохранения анкеты находится в процессе разработки");
+		$.ajax({
+			method: "POST",
+			url: "/updanketa",
+			data: { id: sClientID, Lastname: sLastname, Firstname: sFirstname, Middlename: sMiddlename, Email: sEmail, CountryCitz: sCountryCitz, IIN: sIIN, PasspNum: sPasspNum, Birthdate: dBirthdate, Gender: bGender }
+		})
+			.done(function( result ) {
+			$("#anketaChangeResult").empty().append( result );
+		});
+	});
+
+	$("#radioStructTbl").click(function(){
+		$("#structTable").show();
+		$("#OrganiseChart-simple").hide();
+		$("#ChartTitle").hide();
+		$("#structTree").hide();
+	});
+	function GetStructChart() {
+		$("#structTable").hide();
+		$("#OrganiseChart-simple").show();
+		$("#ChartTitle").show();
+		$("#structTree").hide();
+
+		var sClientID = $("#txClientID").val();
+		var sPlanID = $('input[name=radioPlanType]:checked').val()
+		console.log('sPlanID='+sPlanID);
+		$.get("/getChartData?cid="+sClientID+"&pt="+sPlanID, function(data, status){
+			new Treant( data );
+		});
+	}
+	$("#radioStructChrt").click(function(){
+		GetStructChart();
+	});
+	function TreeItemClick(pItemID){
+		var ulID = pItemID.replace('item', 'ul');
+		if (document.getElementById(ulID).style.display == "none") {
+			$("#"+ulID).show();
+		}
+		else {
+			$("#"+ulID).hide();
+		}
+		
+	};
+	function AddLI(pID, pName, pChildCount){
+		var sStyle = "";
+		if (pChildCount > 0) {
+			sStyle = "style='color: darkblue; cursor: pointer;'";
+		}
+		return "<li id='item"+pID+"' "+sStyle+" onclick='TreeItemClick(`item"+pID+"`);'>" + pName;
+	}
+	function AddUL(pID){
+		return "<ul id='ul"+pID+"' style='padding-left: 30px;'>";
+	}
+	function GetStructTree() {
+		$("#structTable").hide();
+		$("#OrganiseChart-simple").hide();
+		$("#ChartTitle").hide();
+		$("#structTree").show();
+
+		var sClientID = $("#txClientID").val();
+		var sPlanID = $('input[name=radioPlanType]:checked').val()
+		$.ajax({
+			method: "GET",
+			url: "/getTreeData?cid="+sClientID+"&pt="+sPlanID
+		})
+		.done(function( result ) {
+			//$("#structTree").empty().append( JSON.stringify(result) );
+			
+			var html = "";
+			if (result.nodeStructure.length > 0) {
+				html = "<ul>";
+			}
+			$.each(result.nodeStructure, function (index0, item0) {
+				//console.log(JSON.stringify(item));
+				//console.log(item.name);
+				//color: blue; cursor: pointer;
+				
+				//html += "<li id='item"+item0.idclient+"' onclick='TreeItemClick(`item"+item0.idclient+"`);'>" + item0.name;
+				html += AddLI(item0.idclient, item0.name, item0.children.length);
+				html += "</li>";
+				if (item0.children.length > 0) {
+					html += AddUL(item0.idclient);
+					$.each(item0.children, function (index1, item1) {
+						//html += "<li id='item"+item1.idclient+"' onclick='TreeItemClick(`item"+item1.idclient+"`);'>" + item1.name;
+						html += AddLI(item1.idclient, item1.name, item1.children.length);
+						html += "</li>";
+						if (item1.children.length > 0) {
+							html += AddUL(item1.idclient);
+							$.each(item1.children, function (index2, item2) {
+								//html += "<li id='item"+item2.idclient+"' onclick='TreeItemClick(`item"+item2.idclient+"`);'>" + item2.name;
+								html += AddLI(item2.idclient, item2.name, item2.children.length);
+								html += "</li>";
+								if (item2.children.length > 0) {
+									html += AddUL(item2.idclient);
+									$.each(item2.children, function (index3, item3) {
+										//html += "<li id='item"+item3.idclient+"' onclick='TreeItemClick(`item"+item3.idclient+"`);'>" + item3.name;
+										html += AddLI(item3.idclient, item3.name, item3.children.length);
+										html += "</li>";
+										if (item3.children.length > 0) {
+											html += AddUL(item3.idclient);
+											$.each(item3.children, function (index4, item4) {
+												//html += "<li id='item"+item4.idclient+"' onclick='TreeItemClick(`item"+item4.idclient+"`);'>" + item4.name;
+												html += AddLI(item4.idclient, item4.name, item4.children.length);
+												html += "</li>";
+												if (item4.children.length > 0) {
+													html += AddUL(item4.idclient);
+													$.each(item4.children, function (index5, item5) {
+														//html += "<li id='item"+item5.idclient+"' onclick='TreeItemClick(`item"+item5.idclient+"`);'>" + item5.name;
+														html += AddLI(item5.idclient, item5.name, item5.children.length);
+														html += "</li>";
+														if (item5.children.length > 0) {
+															html += AddUL(item5.idclient);
+															$.each(item5.children, function (index6, item6) {
+																//html += "<li id='item"+item6.idclient+"' onclick='TreeItemClick(`item"+item6.idclient+"`);'>" + item6.name;
+																html += AddLI(item6.idclient, item6.name, item6.children.length);
+																html += "</li>";
+																if (item6.children.length > 0) {
+																	html += AddUL(item6.idclient);
+																	$.each(item6.children, function (index7, item7) {
+																		//html += "<li id='item"+item7.idclient+"' onclick='TreeItemClick(`item"+item7.idclient+"`);'>" + item7.name;
+																		html += AddLI(item7.idclient, item7.name, item7.children.length);
+																		html += "</li>";
+																	});
+																	html += "</ul>";
+																}
+																//html += "</li>";
+															});
+															html += "</ul>";
+														}
+														//html += "</li>";
+													});
+													html += "</ul>";
+												}
+												//html += "</li>";
+											});
+											html += "</ul>";
+										}
+										//html += "</li>";
+									});
+									html += "</ul>";
+								}
+								//html += "</li>";
+							});
+							html += "</ul>";
+						}
+						//html += "</li>";
+					});
+					//html += "</ul>";
+				}
+				//html += "</li>";
+			});
+			if (html.length > 0) {
+				html+="</ul>";
+			}
+			$("#structTree").append(html);
+		});
+	}
+	$("#radioStructTree").click(function(){
+		GetStructTree();
+	});
+</script>

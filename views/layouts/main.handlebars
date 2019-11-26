@@ -1,127 +1,122 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-	{{>head}}
-</head>
-<body>
+	<head>
+		{{>head}}
+	</head>
+	<body>
 
-{{>bsnavbar}}
+		{{>bsnavbar}}
 
-{{{body}}}
+		{{{body}}}
 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<script src="./wp-content/themes/mytheme/js/jquery-2.2.3.min.js"></script>
-	<script src="./wp-content/themes/mytheme/js/bootstrap.min.js"></script>
-	<!--<script src="./wp-content/themes/mytheme/js/scripts.min.js"></script>-->
-	<link rel="stylesheet" href="./wp-content/themes/mytheme/css/bootstrap.min.css">
-	<link rel="stylesheet" href="./wp-content/themes/mytheme/css/main.css">
-	<script>
-	if(window.screen.width > 767) {
-	  document.write('<script src="./wp-content/themes/mytheme/js/wow.js"><\/script>');
-	}
-	</script>
-	<script>
-		var wow = new WOW(
-		{
-			boxClass:     'wow',      // animated element css class (default is wow)
-			animateClass: 'animated', // animation css class (default is animated)
-			offset:       0,          // distance to the element when triggering the animation (default is 0)
-			mobile:       true,       // trigger animations on mobile devices (default is true)
-			live:         true,       // act on asynchronously loaded content (default is true)
-			callback:     function(box) {
-			// the callback is fired every time an animation is started
-			// the argument that is passed in is the DOM node being animated
-			},
-			scrollContainer: null // optional scroll container selector, otherwise use window
-		}
-		);
-		wow.init();
-	</script>
-	<script>
-	$(".menu-button").click(function() {
-		$(".hiddenMenu").stop(true, true).animate({
-			left: 0,
-			opacity: 1
-		});
-		$('.overlay').fadeIn();
-	})
-	$(".menu-button-close, .hiddenMenu ul a").click(function() {
-		$(".hiddenMenu").stop(true, true).animate({
-			left: "-270px",
-			opacity: 0
-		});
-		$(".overlay").fadeOut();
-	})
-	</script>
-	<script>
-		$(document).ready(function(){
-	    $("._header_menu").on("click","a", function (event) {
-		      event.preventDefault();
-		      var id  = $(this).attr('href'),
-		      top = $(id).offset().top;
-		      $('body,html').animate({scrollTop: top -60}, 1500);
-		  	});
-		});
-		$(document).ready(function(){
-	    $(".hiddenMenu").on("click","a", function (event) {
-		      event.preventDefault();
-		      var id  = $(this).attr('href'),
-		      top = $(id).offset().top;
-		      $('body,html').animate({scrollTop: top -60}, 1500);
-		  	});
-		});
-	</script>
-	<script>
-  	$(document).ready(function() {
-	$(window).scroll(function() {
-	    if ($(this).scrollTop() > 50) {
-	        $('#back-to-top').fadeIn();
-	    } else {
-	        $('#back-to-top').fadeOut();
-	    }
-	});
-	// scroll body to 0px on click
-	$('#back-to-top').click(function() {
-	    $('#back-to-top').tooltip('hide');
-	    $('body,html').animate({
-	        scrollTop: 0
-	    }, 800);
-	    return false;
-	});
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src="./wp-content/themes/mytheme/js/jquery-2.2.3.min.js"></script>
+		<script src="./wp-content/themes/mytheme/js/bootstrap.min.js"></script>
+		<!--<script src="./wp-content/themes/mytheme/js/scripts.min.js"></script>-->
+		<link rel="stylesheet" href="./wp-content/themes/mytheme/css/bootstrap.min.css">
+		<link rel="stylesheet" href="./wp-content/themes/mytheme/css/main.css">
+		<script>
+			if(window.screen.width > 767) {
+				document.write('<script src="./wp-content/themes/mytheme/js/wow.js"><\/script>');
+			}
+		</script>
+		<script>
+			var wow = new WOW (
+				{
+					boxClass:     'wow',      // animated element css class (default is wow)
+					animateClass: 'animated', // animation css class (default is animated)
+					offset:       0,          // distance to the element when triggering the animation (default is 0)
+					mobile:       true,       // trigger animations on mobile devices (default is true)
+					live:         true,       // act on asynchronously loaded content (default is true)
+					callback:     function(box) {
+					// the callback is fired every time an animation is started
+					// the argument that is passed in is the DOM node being animated
+					},
+					scrollContainer: null // optional scroll container selector, otherwise use window
+				}
+			);
+			wow.init();
+		</script>
+		<script>
+			$(".menu-button").click(function() {
+				$(".hiddenMenu").stop(true, true).animate({
+					left: 0,
+					opacity: 1
+				});
+				$('.overlay').fadeIn();
+			})
+			$(".menu-button-close, .hiddenMenu ul a").click(function() {
+				$(".hiddenMenu").stop(true, true).animate({
+					left: "-270px",
+					opacity: 0
+				});
+				$(".overlay").fadeOut();
+			})
+		</script>
+		<script>
+			$(document).ready(function(){
+				$("._header_menu").on("click","a", function (event) {
+					event.preventDefault();
+					var id  = $(this).attr('href');
+					if ($(id).length) {
+						var top = $(id).offset().top;
+						$('body,html').animate({scrollTop: top -60}, 1500);
+					} else {
+						window.location.href = "/"+id;
+					}
+				});
+			});
+			$(document).ready(function(){
+				$(".hiddenMenu").on("click","a", function (event) {
+					event.preventDefault();
+					var id  = $(this).attr('href'),
+					top = $(id).offset().top;
+					$('body,html').animate({scrollTop: top -60}, 1500);
+				});
+			});
+		</script>
+		<script>
+			$(document).ready(function() {
+				$(window).scroll(function() {
+					if ($(this).scrollTop() > 50) {
+						$('#back-to-top').fadeIn();
+					} else {
+						$('#back-to-top').fadeOut();
+					}
+				});
+				// scroll body to 0px on click
+				$('#back-to-top').click(function() {
+					$('#back-to-top').tooltip('hide');
+					$('body,html').animate({
+						scrollTop: 0
+					}, 800);
+					return false;
+				});
 
-	$('#back-to-top').tooltip('show');
-	});
-	</script>
-	<script type="text/javascript">
-	$(document).ready(function(){
-
-	  var windowHeight = $(window).height();
-	 
-
-	    $(window).resize(function() {
-	      if( $(window).height() <= 470 ) {
-	        $(".hiddenMenu ul li").css(
-	            {'margin-top': '0', 'margin-bottom': '5px'}
-	        );
-	        $(".hiddenMenu ul li a").css(
-	            {'padding-top': '0', 'padding-bottom': '0', 'font-size': '16px'}
-	        );
-	        $(".hidden-menu-language").css(
-	            {'margin-top': '10px'}
-	        );
-	        
-	        $(".hidden-menu-language-buttons input").css(
-	            {'width': '40px', 'height': '25px'}
-	        );
-
-	      }
-	      });
-
-	   
-	 
-	});
-	</script>
-
-
-</body>
+				$('#back-to-top').tooltip('show');
+			});
+		</script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				var windowHeight = $(window).height();
+				$(window).resize(function() {
+					if( $(window).height() <= 470 ) {
+						$(".hiddenMenu ul li").css(
+							{'margin-top': '0', 'margin-bottom': '5px'}
+						);
+						$(".hiddenMenu ul li a").css(
+							{'padding-top': '0', 'padding-bottom': '0', 'font-size': '16px'}
+						);
+						$(".hidden-menu-language").css(
+							{'margin-top': '10px'}
+						);
+						$(".hidden-menu-language-buttons input").css(
+							{'width': '40px', 'height': '25px'}
+						);
+					}
+				});
+			});
+		</script>
+	
+	</body>
 </html>

@@ -1,129 +1,428 @@
-<div>
+<div class="wrapper">
 	
 	{{#if adminLogin}}
 	
-	<h2>Главная страница</h2><br />
-	<p><a href="/exadm">Выйти из админки ({{adminLogin}})</a></p>
-	<div style='float: left; width: 10%; background-color: orange;'>
-		<p><a href="/editadmpwd">Смена пароля</a></p>
-		<p id="editprodmenu"><a href="/admproducts">Продукция</a></p>
-		<p id="editclientmenu"><a href="/admclients">Клиенты</a></p>
-	</div>
-	<div id='admarea' style='float: left; width: 90%; background-color: transparent;'>
-		{{#if clientList}}
-			<table>
-				<tbody id="client_items">
-					<th>ID</th><th>Фамилия</th><th>Имя</th><th>Отчество</th>
-					{{#each clientList}}
-					<tr>
-						<td>{{this.ID}}</td>
-						<td>{{this.Lastname}}</td>
-						<td>{{this.Firstname}}</td>
-						<td>{{this.Middlename}}</td>
-					</tr>
-					{{/each}}
-				</tbody>
-			</table>
-		{{else}}
-			{{#if productList}}
-				{{#each proditems}}
-					<div>
-						<span id="productID_{{this.ID}}" hidden>{{this.ID}}</span>
-						<img id="productImg_{{this.ID}}" src="./wp-content/uploads/prods/{{this.ImgPath}}" />
-						<p id="productName_{{this.ID}}">{{this.Name}}</p>
-						<p><span>Цена: </span><span id="productPrice_{{this.ID}}">{{this.Price}}</span></p>
-						<p id="productDescr_{{this.ID}}">{{this.Descr}}</p>
+		<h2><a href="/admin">Главная страница</a></h2>
+		<br />
+		<div>
+			<span>{{adminLogin}}</span>
+			<a href="/exadm" class="pull-right">Выйти из админки</a>
+		</div>
+		<div style='float: left; width: 10%; background-color: orange;'>
+			<p><a href="/editadmpwd">Смена пароля</a></p>
+			<p id="editprodmenu"><a href="/admproducts">Продукция</a></p>
+			<p id="editclientmenu"><a href="/admclients">Клиенты</a></p>
+		</div>
+		<div id='admarea' style='float: left; width: 88%; background-color: transparent;'>
+			{{#if clientPage}}
+				{{#if clientData}}
+					<div id="actionMessageDiv">
+						{{#if clientIsUpd}}
+							<p>Клиент {{clientUpdName}} сохранен</p>
+						{{/if}}
+						{{#if errMsg}}
+							<p>{{errMsg}}</p>
+						{{/if}}
 					</div>
-					<hr>
-				{{/each}}
-		
-				<table>
-					<tbody id="prod_items">
-						<th>ID</th>
-						<th>Цена</th>
-						<th>Название</th>
-						<th>Описание</th>
-						<th>Главная картинка</th>
-						{{#each productList}}
-							<tr>
-								<td>{{this.ID}}</td>
-								<td>{{this.Price}}</td>
-								<td>{{this.Name}}</td>
-								<td>{{this.Descr}}</td>
-								<td><img src="{{this.ImgPath}}" /></td>
-							</tr>
-						{{/each}}
-					</tbody>
-				</table>
-			{{else}}
-				<p>Выберите меню</p>
-			{{/if}}
-		{{/if}}
-	</div>
-	<script type="text/javascript">
-		/*$("#editprodmenu").click(function(){
-			$('#admarea').text("Функция редактирования продукции находится в процессе разработки");
-			$.ajax({
-				method: "GET",
-				url: "/admproducts"
-				//,data: { id: sClientID, Lastname: sLastname, Firstname: sFirstname, Middlename: sMiddlename, Email: sEmail, CountryCitz: sCountryCitz, IIN: sIIN, PasspNum: sPasspNum, Birthdate: dBirthdate, Gender: bGender }
-			})
-			.done(function( result ) {
-				//$("#admarea").empty().append( result );
-				$("#admarea").empty().load( result );
-			});
-		});*/
+					<div class="card" id="div_OldClient">
+						{{#each clientData}}
+							<div class="card-body">
+								<a class="btn btn-primary" href="/admclients">Назад</a>
+								<h3>Редактирование клиента {{this.ID}} {{this.Lastname}} {{this.Firstname}} {{this.Middlename}}</h3>
+								<!--<form id="frmClient{{this.ID}}" action="/admclient/{{this.ID}}" method="post">-->
+								<form id="frmClient{{this.ID}}" method="post" enctype="multipart/form-data">
+									<span id="client{{this.ID}}" name="idclient" style="display: none;">{{this.ID}}</span>
 
-		/*$("#editclientmenu").click(function(){
-			$('#admarea').text("Функция редактирования клиентов находится в процессе разработки");
-			$.ajax({
-				method: "GET",
-				url: "/admclients"
-			})
-			.done(function( result ) {
-				$("#admarea").empty().load( result );
-			});
-		});*/
-		
-		$(document).ready(function(){
-		$('#test_p').html = 'doc ready';
-		/*$.ajax({
-			url: '/loadprods',
-			method: "GET",
-			//data: {},
-			dataType: "json",
-			//cache: false,
-			success: function (data) {
-				 var tbl = "<th>Картина</th><th>Продукт</th><th>Цена</th><th>Описание</th>";
-				$.each(data, function (i, val) {
-					var tr = "<tr>" +
-						"<td><img src='./wp-content/uploads/prods/"+ val.ImgPath + "' /></td>" +
-						"<td>"+ val.name + "</td>" +
-						"<td>"+ val.price + "</td>" +
-						"<td>"+ val.descr + "</td>" +
-						"</tr>";
-					$(tbl+tr).appendTo("#prod_items");
-				});
+									<label for="lastname{{this.ID}}">Фамилия</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="lastname{{this.ID}}" name="txClLastName" value="{{this.Lastname}}" required />
+									</div>
+
+									<label for="firstname{{this.ID}}">Имя</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="firstname{{this.ID}}" name="txClFirstName" value="{{this.Firstname}}" required />
+									</div>
+
+									<label for="middlename{{this.ID}}">Отчество</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="middlename{{this.ID}}" name="txClMiddleName" value="{{this.Middlename}}" />
+									</div>
+
+									<label for="birthdate{{this.ID}}">Дата рождения</label>
+									<div class="form-group">
+										<input type="date" class="form-control" id="birthdate{{this.ID}}" name="txClBirthdate" value="{{this.clBirthdate}}" />
+									</div>
+
+									<label for="cl_genderM{{this.ID}}">Пол</label>
+									<div class="form-group">
+										<input type="radio" id="genderM{{this.ID}}" name="txClGender" value="1" {{#iff this.Gender '==' 1}} checked {{/iff}} />муж
+										<input type="radio" id="genderF{{this.ID}}" name="txClGender" value="0" {{#iff this.Gender '==' 0}} checked {{/iff}} />жен
+									</div>
+
+									<label for="email{{this.ID}}">e-mail</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="email{{this.ID}}" name="txClEmail" value="{{this.Email}}" />
+									</div>
+
+									<label for="cntrycitz{{this.ID}}">Страна гражданства</label>
+									<div class="form-group">
+										<select id="cntrycitz{{this.ID}}" name="nClCountryCitz">
+											{{#if countryList}}
+												{{#each countryList}}
+													<option value="{{countryList.IDCountry}}" {{#iff countryList.IDCountry '==' countryList.IDCountryCitz}} selected {{/iff}}>{{countryList.Shortname}}</option> 
+												{{/each}}
+											{{else}}
+												<option value="1" selected>Казахстан</option> 
+											{{/if}}
+										</select>
+									</div>
+
+									<label for="iin{{this.ID}}">ИИН</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="iin{{this.ID}}" name="txClIIN" value="{{this.IIN}}" />
+									</div>
+
+									<label for="passpnum{{this.ID}}">Номер паспорта/уд.личн.</label>
+									<div class="form-group">
+										<input type="text" class="form-control" id="passpnum{{this.ID}}" name="txClPasspNum" value="{{this.PasspNum}}" />
+									</div>
+
+									<!--<button class="btn btn-primary" id="btnSaveCl{{this.ID}}" name="btnSaveOldClient">Сохранить</button>-->
+									<button class="btn btn-primary" id="btnSaveCl{{this.ID}}" name="btnSaveOldClient" formaction="/admsaveclient/{{this.ID}}">Сохранить</button>
+								</form>
+							</div>
+							<hr>
+							<br />
+						{{/each}}
+					</div>
+				{{else}}
+					<button class="btn btn-primary" id="btnNewClient" name="btnNewClient">Новый клиент</button>
+					<div id="actionMessageDiv">
+						{{#if clientIsNew}}
+							<p>Новый клиент "{{clientNewFIO}}" заведен. Пролистайте вниз до конца, чтобы найти его и отредактировать</p>
+						{{/if}}
+						{{#if clientIsDel}}
+							<p>Клиент {{clientUpdName}} удален</p>
+						{{/if}}
+						{{#if clientIsUpd}}
+							<p>Клиент {{clientUpdName}} сохранен</p>
+						{{/if}}
+						{{#if errMsg}}
+							<p>{{errMsg}}</p>
+						{{/if}}
+					</div>
+					<div class="card" id="div_NewClient" style="display: none;">
+						<div class="card-body">
+							<!--<form id="frmClient0" action="/admnewclient" method="post">-->
+							<form id="frmClient0" method="post" enctype="multipart/form-data">
+								<span id="client_0" style="display: none;">0</span>
+
+								<label for="cl_lastname_0">Фамилия</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_lastname_0" name="txClLastName" value="{{this.LastName}}" required />
+								</div>
+
+								<label for="cl_firstname_0">Имя</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_firstname_0" name="txClFirstName" value="{{this.FirstName}}" required />
+								</div>
+								
+								<label for="cl_middlename_0">Отчество</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_middlename_0" name="txClMiddleName" value="{{this.MiddleName}}" />
+								</div>
+								
+								<label for="cl_birthdate_0">Дата рождения</label>
+								<div class="form-group">
+									<input type="date" class="form-control" id="cl_birthdate_0" name="txClBirthdate" value="{{this.Birthdate}}" />
+								</div>
+								
+								<label for="cl_gender_0">Пол</label>
+								<div class="form-group">
+									<input type="radio" id="cl_genderM_0" name="txClGender" value="1" />муж
+									<input type="radio" id="cl_genderF_0" name="txClGender" value="0" checked />жен
+								</div>
+								
+								<label for="cl_email_0">e-mail</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_email_0" name="txClEmail" value="{{this.Email}}" />
+								</div>
+								
+								<label for="cl_countrycitz_0">Страна гражданства</label>
+								<div class="form-group">
+									<select id="cl_countrycitz_0" name="nClCountryCitz">
+										{{#if countryList}}
+											{{#each countryList}}
+												<option value="{{this.IDCountry}}" {{#iff this.IDCountry '==' 1}} selected {{/iff}}>{{this.Shortname}}</option> 
+											{{/each}}
+										{{else}}
+											<option value="1" selected>Казахстан</option> 
+										{{/if}}
+									</select>
+								</div>
+								
+								<label for="cl_iin_0">ИИН</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_iin_0" name="txClIIN" value="{{this.IIN}}" />
+								</div>
+								
+								<label for="cl_passpnum_0">Номер паспорта/уд.личн.</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="cl_passpnum_0" name="txClPasspNum" value="{{this.PasspNum}}" />
+								</div>
+
+								<!--<button class="btn btn-primary" id="btnSaveClient0" name="btnSaveClient">Сохранить</button>-->
+								<button class="btn btn-primary" id="btnSaveClient0" name="btnSaveClient" formaction="/admnewclient">Сохранить</button>
+							</form>
+						</div>
+						<script>
+							/*var editor = new Simditor({
+								textarea: $('#descr_0'),
+								i18n: 'ru-RU'
+								//optional options
+							});*/
+						</script>
+						<hr>
+						<br />
+					</div>
+					<script>
+						$('#btnNewClient').click(function(){
+							if ( $("#div_NewClient").css('display') == 'none' || $("#div_NewClient").css("visibility") == "hidden" ){
+								//$("#div_NewClient").show();
+								$("#div_NewClient").css("display", "block");
+								$("#div_AllClient").css("display", "none");
+							}
+							else {
+								//$("#div_NewClient").hide();
+								$("#div_NewClient").css("display", "none");
+								$("#div_AllClient").css("display", "block");
+							}
+						});
+					</script>
+				{{/if}}
+				{{#if clientList}}
+					<div class="card" id="div_AllClient">
+						<p>-----------------</p>
+						<p><strong>=== Заведенные клиенты: ===</strong></p>
+						<p>-----------------</p>
+						<table class="table table-hover table-bordered">
+							<thead>
+								<tr>
+									<th scope="col">ID</th>
+									<th scope="col">Фамилия</th>
+									<th scope="col">Имя</th>
+									<th scope="col">Отчество</th>
+									<th scope="col">Дата рожд</th>
+									<th scope="col">Пол</th>
+									<th scope="col">email</th>
+									<th scope="col">ИИН</th>
+									<th scope="col">Паспорт/Уд.личн.</th>
+									<th scope="col">Страна гражданства</th>
+								</tr>
+							</thead>
+							<tbody id="client_items">
+								{{#each clientList}}
+								<tr>
+									<th scope="row"><a href="/admclient?cid={{this.ID}}">{{this.ID}}</a></th>
+									<!--<th scope="row"><a href="/admclients/{{this.ID}}" onclick="EditClient({{this.ID}}, '{{this.Lastname}}', '{{this.Firstname}}', '{{this.Middlename}}', '{{this.clBirthdate}}', {{#if this.Gender}}1{{else}}0{{/if}}, '{{this.Email}}', '{{this.IIN}}', '{{this.PasspNum}}', '{{this.CountryShortName}}');">{{this.ID}}</a></th>-->
+									<td>{{this.Lastname}}</td>
+									<td>{{this.Firstname}}</td>
+									<td>{{this.Middlename}}</td>
+									<td>{{this.clBirthdate}}</td>
+									<td>{{#if this.Gender}}Муж{{else}}Жен{{/if}}</td>
+									<td>{{this.Email}}</td>
+									<td>{{this.IIN}}</td>
+									<td>{{this.PasspNum}}</td>
+									<td>{{this.CountryShortName}}</td>
+								</tr>
+								{{/each}}
+							</tbody>
+						</table>
+					</div>
+					<script>
+						function EditClient(pID, pLastname, pFirstname, pMiddlename, pClBirthdate, pGender, pEmail, pIIN, pPasspNum, pIDCountry) {
+							console.log(pID);
+							$("#client_0").val() = pID;
+							$("#cl_lastname_0").val() = pLastname;
+							/*cl_firstname_0
+							cl_middlename_0
+							cl_birthdate_0
+							txClGender cl_genderM_0 cl_genderF_0
+							cl_email_0
+							cl_iin_0
+							cl_passpnum_0
+							*/
+							//$("#div_NewClient").css("display", "block");
+							//$("#div_AllClient").css("display", "none");
+						}
+					</script>
+				{{else}}
+					{{#if clientData}}
+					{{else}}
+						<p>Заведенных клиентов нет</p>
+					{{/if}}
+				{{/if}}
+			{{else}}
+				{{#if productPage}}
+					<button class="btn btn-primary" id="btnNewProduct" name="btnNewProduct">Новый продукт</button>
+					<div id="actionMessageDiv">
+						{{#if productIsNew}}
+							<p>Новый продукт заведен. Пролистайте вниз до конца, чтобы найти его и отредактировать</p>
+						{{/if}}
+						{{#if prodIsDel}}
+							<p>Продукт {{prodUpdName}} удален</p>
+						{{/if}}
+						{{#if prodIsUpd}}
+							<p>Продукт {{prodUpdName}} сохранен</p>
+						{{/if}}
+						{{#if errMsg}}
+							<p>{{errMsg}}</p>
+						{{/if}}
+					</div>
+			
+					{{>frm_newproduct}}
+			
+					{{#if productList}}
+						<div class="card" id="div_AllProduct">
+							<p>-----------------</p>
+							<p><strong>=== Заведенные продукты: ===</strong></p>
+							<p>-----------------</p>
+						{{#each productList}}
+							<div class="card-body">
+								<form id="frm{{this.ID}}" method="post" enctype="multipart/form-data">
+									
+									<div class="form-group">
+										<label>Сменить рисунок</label>
+										<div class="input-group">
+											<span class="input-group-btn">
+												<span class="btn btn-default btn-file">
+													<input type="file" id="imgInp_{{this.ID}}" name='fimgFile' accept="image/*">
+												</span>
+											</span>
+											<input type="text" class="form-control" readonly name="txImgFileName" style="display: none;">
+										</div>
+										<img id='imgUpload_{{this.ID}}' src="{{this.ImgPath}}" name='imgUpload' width="200px" height="200px" />
+									</div>
+									<script>
+										$(document).ready( function() {
+											$(document).on('change', '.btn-file :file', function() {
+												var input = $(this),
+													label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+												input.trigger('fileselect', [label]);
+											});
+											$('.btn-file :file').on('fileselect', function(event, label) {
+												var input = $(this).parents('.input-group').find(':text'),
+													log = label;
+												if( input.length ) {
+													input.val(log);
+												} else {
+													if( log ) alert(log);
+												}
+											});
+											function readURL(input) {
+												if (input.files && input.files[0]) {
+													var reader = new FileReader();
+													reader.onload = function (e) {
+														$('#imgUpload_{{this.ID}}').attr('src', e.target.result);
+													}
+													reader.readAsDataURL(input.files[0]);
+												}
+											}
+											$("#imgInp_{{this.ID}}").change(function(){
+												readURL(this);
+											}); 	
+										});
+									</script>
+									
+										<span id="prod_{{this.ID}}" style="display: none;">{{this.ID}}</span>
+										
+										<label for="name_{{this.ID}}">Продукт:</label>
+										<div class="form-group">
+											<input type="text" class="form-control" id="name_{{this.ID}}" name="txName" value="{{this.Name}}" />
+										</div>
+									
+										<label for="nameForPrice_0">Название для прайса:</label>
+										<div class="form-group">
+											<input type="text" class="form-control" id="nameForPrice_0" name="txNameForPrice" value="{{this.NamePrice}}" />
+										</div>
+								
+										<label for="imgAlt_0">Кодовое название продукта (латинскими буквами)</label>
+										<div class="form-group">
+											<input type="text" class="form-control" id="imgAlt_0" name="txImgAlt" value="{{this.ImgAlt}}" />
+										</div>
+
+										<label for="price_{{this.ID}}">Цена (kzt):</label>
+										<div class="form-group">
+											<input type="text" class="form-control" id="price_{{this.ID}}" name="txPrice" value="{{this.Price}}" />
+										</div>
+										
+										<div class="form-group">
+											<label for="isShowProd_0">Показывать в секторе "Продукция"?</label>
+											<input type="checkbox" id="isShowProd_0" name="isShowProd" {{#if this.IsShowProd}} checked {{/if}} />
+										</div>
+
+										<div class="form-group">
+											<label for="isShowPrice_0">Показывать в секторе "Прайс-лист"?</label>
+											<input type="checkbox" id="isShowPrice_0" name="isShowPrice" {{#if this.IsShowPrice}} checked {{/if}} />
+										</div>
+
+										<label for="descr_{{this.ID}}">Описание:</label>
+										<div class="form-group">
+											<textarea type="text" class="form-control" id="descr_{{this.ID}}" name="txDescr" rows="11" cols="103">{{this.Descr}}</textarea>
+										</div>
+
+									<button class="btn btn-primary" id="btnSave{{this.ID}}" name="btnSave" formaction="/admsaveprod/{{this.ID}}">Сохранить</button>
+									<button class="btn btn-primary" id="btnDel{{this.ID}}" name="btnDelProd" formaction="/admdelprod/{{this.ID}}">Удалить</button>
+								</form>
+							</div>
+							<script>
+								var editor = new Simditor({
+								  textarea: $('#descr_{{this.ID}}')
+								  //optional options
+								});
+							</script>
+							<hr>
+							<p>-----------------</p>
+							<p>-----------------</p>
+							<p>-----------------</p>
+							<br />
+						{{/each}}
+						</div>
+					{{else}}
+						<p>Заведенных продуктов нет</p>
+					{{/if}}
+				{{/if}}
+			{{/if}}
+		</div>
+		<script type="text/javascript">
+			function ClearMsg(msgElement){
+				window.setTimeout( function(){
+					$(msgElement).html("");
+				}, 10000 );
 			}
-		});*/
-	});
-	</script>
+			$(document).ready(function(){
+				//$('#test_p').html = 'doc ready';
+				ClearMsg("#actionMessageDiv");
+			});
+		</script>
 	
 	{{else}}
 	
-	<h2>Вход:</h2>
-	<form class="form-inline" role="form" action="/admin" method="post" name="AdmLoginForm">
-		<div class="form-group">
-			<label class="sr-only" for="admlogin">Логин</label>
-			<input type="text" name="admlogin" id="admlogin" placeholder="логин" />
+		<h2>Вход:</h2>
+		<div class="container">
+			<form class="form" role="form" action="/admin" method="post" name="AdmLoginForm">
+				<div class="form-group">
+					<label class="sr-only" for="admlogin">Логин: </label>
+					<input type="text" name="admlogin" id="admlogin" placeholder="логин" />
+				</div>
+				<div class="form-group">
+					<label class="sr-only" for="admpwd">Пароль: </label>
+					<input type="password" name="admpwd" id="admpwd" placeholder="пароль" />
+				</div>
+				<br />
+				<input type="submit" class="btn btn-primary" id="btnAdmLogin" name="btnAdmLogin" value="Войти" />
+			</form>
 		</div>
-		<div class="form-group">
-			<label class="sr-only" for="admpwd">Пароль</label>
-			<input type="password" name="admpwd" id="admpwd" placeholder="пароль" />
-		</div>
-		<br />
-		<input type="submit" class="btn btn-primary" id="btnAdmLogin" name="btnAdmLogin" value="Войти" />
-	</form>
 	
 	{{/if}}
 	
