@@ -1187,11 +1187,11 @@ body {
 	display: block;
 	position: absolute;
 	width: 54%;
-	max-height: 327px;
+	max-height: 527px; /*327px*/
 	height: 100%;
 	left: 0;
 	border-right: 100px solid transparent;
-	border-bottom: 327px solid #43499f;
+	border-bottom: 527px solid #A6A125; /*#43499f;*/ /*327px*/
 	z-index: 9;
 }
 

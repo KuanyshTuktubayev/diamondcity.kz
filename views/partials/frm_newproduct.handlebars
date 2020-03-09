@@ -1,0 +1,114 @@
+					<div class="card" id="div_NewProduct" style="display: none;">
+						<div class="card-body">
+							<form id="frmNewProd0" method="post" enctype="multipart/form-data">
+								<div class="form-group">
+									<label>Сменить рисунок</label>
+									<div class="input-group">
+										<span class="input-group-btn">
+											<span class="btn btn-default btn-file">
+												<input type="file" id="imgInp_0" name="fImgInp_0" accept="image/*">
+											</span>
+										</span>
+										<input type="text" class="form-control" name="txImgName_0" readonly style="display: none;">
+									</div>
+									<img id='imgUpload_0' src="{{this.ImgPath}}" name='imgUpload' width="200px" height="200px" />
+								</div>
+								<script>
+									$(document).ready( function() {
+										$(document).on('change', '.btn-file :file', function() {
+											var input = $(this),
+												label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+											input.trigger('fileselect', [label]);
+										});
+										$('.btn-file :file').on('fileselect', function(event, label) {
+											var input = $(this).parents('.input-group').find(':text'),
+												log = label;
+											if( input.length ) {
+												input.val(log);
+											} else {
+												if( log ) alert(log);
+											}
+										});
+										function readURL(input) {
+											if (input.files && input.files[0]) {
+												var reader = new FileReader();
+												reader.onload = function (e) {
+													$('#imgUpload_0').attr('src', e.target.result);
+												}
+												reader.readAsDataURL(input.files[0]);
+											}
+										}
+										$("#imgInp_0").change(function(){
+											readURL(this);
+										}); 	
+									});
+								</script>
+								
+								<span id="prod_0" style="display: none;">0</span>
+
+								<label for="name_0">Продукт:</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="name_0" name="txName" value="{{this.Name}}" required />
+								</div>
+
+								<label for="nameForPrice_0">Название для прайса:</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="nameForPrice_0" name="txNameForPrice" value="{{this.NamePrice}}" />
+								</div>
+
+								<label for="imgAlt_0">Кодовое название продукта (латинскими буквами)</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="imgAlt_0" name="txImgAlt" value="{{this.ImgAlt}}" />
+								</div>
+
+								<label for="price_0">Цена (kzt):</label>
+								<div class="form-group">
+									<input type="text" class="form-control" id="price_0" name="txPrice" value="{{this.Price}}" required />
+								</div>
+
+								<div class="form-group">
+									<label for="isShowProd_0">Показывать в секторе "Продукция"?</label>
+									<input type="checkbox" id="isShowProd_0" name="isShowProd" value=1 />
+								</div>
+
+								<div class="form-group">
+									<label for="isShowPrice_0">Показывать в секторе "Прайс-лист"?</label>
+									<input type="checkbox" id="isShowPrice_0" name="isShowPrice" value=1 />
+								</div>
+
+								<label for="descr_0">Описание:</label>
+								<div class="form-group">
+									<textarea type="text" class="form-control" id="descr_0" name="txDescr" rows="11" cols="103">{{this.Descr}}</textarea>
+								</div>
+									
+								<button class="btn btn-primary" id="btnSave0" name="btnSave" formaction="/admnewprod">Сохранить</button>
+							</form>
+						</div>
+						<script>
+							var editor = new Simditor({
+								textarea: $('#descr_0'),
+								i18n: 'ru-RU'
+								//optional options
+							});
+						</script>
+						<hr>
+						<br />
+					</div>
+					<script>
+						$('#btnNewProduct').click(function(){
+							console.log($("#btnNewProduct").html());
+							if ( $("#div_NewProduct").css('display') == 'none' || $("#div_NewProduct").css("visibility") == "hidden" ){
+								//$("#div_NewProduct").show();
+								$("#div_NewProduct").css("display", "block");
+								$("#btnNewProduct").html('Назад');
+								$("#div_AllProduct").css("display", "none");
+							}
+							else {
+								//$("#div_NewProduct").hide();
+								$("#div_NewProduct").css("display", "none");
+								$("#btnNewProduct").html('Новый продукт');
+								$("#div_AllProduct").css("display", "block");
+							}
+							console.log($("#btnNewProduct").html());
+						});
+					</script>

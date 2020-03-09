@@ -89,6 +89,137 @@ app.use(session({
 }));
 
 
+// <<< email send
+async function sendEmail(sMailReceivers, aMailReceiversCC, sHTMLBody, sSubject) {
+	var sResult = "";
+	var sHostMailSender = 'mail.diamondcity.kz';
+	var nPortMailSender = 25;
+	var sMailSender = 'autosender@diamondcity.kz';
+	var sMailSenderPwd = 'Ayana2016@';
+	//var sMailReceivers = 'diana_aidar01.01.2013@mail.ru'; //'diana_aidar01.01.2013@mail.ru, kuanysh.tuktubayev@mail.ru';
+	/*var aMailReceiversCC = ['kuanysh.tuktubayev@mail.ru'
+							//,'"Ноде Майлер" <bar@example.com>, "Name, User" <baz@example.com>'
+						   ];*/
+	let transporter = nodeMailer.createTransport({
+		host: sHostMailSender,
+		port: nPortMailSender,
+		auth: {
+			user: sMailSender,
+			pass: sMailSenderPwd
+		},
+		tls: {
+			rejectUnauthorized: false
+		}
+	});
+	let mailOptions = {
+		from: sMailSender, // sender address
+		to: sMailReceivers, //list of receivers
+		cc: aMailReceiversCC,
+		subject: sSubject, //Subject line
+		html: sHTMLBody // html body
+		//,attachments: [
+		//	{ // Use a URL as an attachment
+		//		filename: 'your-testla.png',
+		//		path: 'https://media.gettyimages.com/photos/view-of-tesla-model-s-in-barcelona-spain-on-september-10-2018-picture-id1032050330?s=2048x2048'
+		//	}
+		//]
+	};
+	var sending = await transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			sResult = error;
+		}
+		else {
+			sResult = info; //"mail sent: " + JSON.stringify();
+		}
+	});
+	return JSON.stringify(sResult);
+}
+
+async function runQueryForMail(sSQL, sEnterSum) {
+	var sResult = "";
+	var sHTMLBody = "";
+	var sSubject = "";
+	var sMailReceivers = 'diana_aidar01.01.2013@mail.ru';
+	var aMailReceiversCC = ['kuanysh.tuktubayev@mail.ru'
+							//,'"Ноде Майлер" <bar@example.com>, "Name, User" <baz@example.com>'
+						   ];
+	let qry = await db.query(sSQL, function(err, result){
+		if (err) { throw err; }
+		if (result.length > 0) {
+			sHTMLBody = "<div>";
+			sHTMLBody = sHTMLBody + "<p>" + "По входу "+sEnterSum+":" + "</p>";
+			sHTMLBody = sHTMLBody + "<table>";
+			sHTMLBody = sHTMLBody + "<thead>";
+			sHTMLBody = sHTMLBody + "<th>Колич людей</th>";
+			sHTMLBody = sHTMLBody + "<th>ID клиента</th>";
+			sHTMLBody = sHTMLBody + "<th>Фамилия</th>";
+			sHTMLBody = sHTMLBody + "<th>Имя</th>";
+			sHTMLBody = sHTMLBody + "<th>Отчество</th>";
+			sHTMLBody = sHTMLBody + "</thead>";
+			sHTMLBody = sHTMLBody + "<tbody>";
+			result.forEach(function(row) {
+				sHTMLBody = sHTMLBody + "<tr>";
+				sHTMLBody = sHTMLBody + "<td>" + row.ChildCount + "</td>";
+				sHTMLBody = sHTMLBody + "<td>" + row.ID + "</td>";
+				sHTMLBody = sHTMLBody + "<td>" + row.Lastname + "</td>";
+				sHTMLBody = sHTMLBody + "<td>" + row.Firstname + "</td>";
+				sHTMLBody = sHTMLBody + "<td>" + row.Middlename + "</td>";
+				sHTMLBody = sHTMLBody + "</tr>";
+			});
+			sHTMLBody = sHTMLBody + "</tbody>";
+			sHTMLBody = sHTMLBody + "</table>";
+			sHTMLBody = sHTMLBody + "</div>";
+
+			sSubject = "Вход "+sEnterSum+", клиенты для награждения";
+
+			sResult = sendEmail(sMailReceivers, aMailReceiversCC, sHTMLBody, sSubject);
+			//console.log(JSON.stringify(sResult));
+		}
+		return JSON.stringify(sResult);
+	});
+	//return sResult;
+}
+
+setInterval(function () {
+	var dtToday = new Date();
+	var hours = dtToday.getHours();
+	var minutes = dtToday.getMinutes();
+	
+	if (hours == 21 && minutes == 45) {
+		//var aaa = sendEmail("<p>test body</p>", "test");
+		
+		var sSQLPT = "select pt.ID, pt.Name, pt.AmountEnter from PlanType pt where pt.ID in (1, 2, 4)";
+		let qryPT = db.query(sSQLPT, function(errPT, resultPT){
+			if (errPT) { throw errPT; }
+			resultPT.forEach(function(rowPT) {
+				var sSQL = "";
+				var nIDPlanType = rowPT.ID;
+				var sPlanTypeName = rowPT.Name +'-'+ rowPT.AmountEnter;
+				
+				if (nIDPlanType == 1) {
+					sSQL = `SELECT GetCountChildsForBonus(cl.ID, `+nIDPlanType+`) ChildCount, cl.* 
+							FROM Client cl 
+							where cl.id > 1000 and cl.IsActive = 1
+							and GetCountChildsForBonus(cl.ID, `+nIDPlanType+`) > 115 
+							order by 1 desc`;
+				}
+				else {
+					sSQL = `SELECT GetCountChildsForBonus(cl.ID, `+nIDPlanType+`) ChildCount, cl.* 
+							FROM Client cl 
+							where cl.id > 1000 and cl.IsActive = 1
+							and (GetCountChildsForBonus(cl.ID, `+nIDPlanType+`) > 115 or GetCountChildsForBonus(cl.ID, `+nIDPlanType+`) between 51 and 64 )
+							order by 1 desc`;
+				}
+				//var bbb = sendEmail(sSQL, "test2:"+sPlanTypeName);
+				var sResult = runQueryForMail(sSQL, sPlanTypeName);
+				//console.log(sResult20000 +"<br>"+ sResult50000 +"<br>"+ sResult200000);
+			});
+		});
+	}
+}, 1000*60); 
+// >>> email send
+
+
 
 
 //showing main page
@@ -718,7 +849,7 @@ app.post('/cab', function(req, res, next) {
 	var nPlanTypeID0 = 0;
 	
 	var sessData = req.session;
-	if(sessData.userID > 0 && sessData.userPWD != ""){
+	if (sessData.userID > 0 && sessData.userPWD != "") {
 		nClientID = sessData.userID;
 		sPwd = sessData.userPWD;
 		bIsReg = sessData.isReg;
@@ -733,8 +864,64 @@ app.post('/cab', function(req, res, next) {
 		//sessData.planTypeID = nPlanTypeID;
 	}
 	
-	if(bIsReg){
-		res.send("Онлайн-регистрация пока не доступна.<br><a href='/'>Вернуться на сайт</a>");
+	if (bIsReg) {
+		var sLastname = req.body.Lastname;
+		var sFirstname = req.body.Firstname;
+		var sMiddlename = req.body.Middlename;
+		var sEmail = req.body.email;
+		var sIIN = req.body.IIN;
+		var sMobphone = req.body.Mobilephone;
+		var nIDParent = req.body.IDParent;
+		var sPwd = req.body.pwd;
+		
+		/*
+		надо проверить IDParent
+		если IDParent отсутствует в базе, то ругаемся
+		если IDParent есть, то проверим существование регистрируемого клиента
+		может быть регистрируемый клиент уже есть, надо проверить по ФИО, емайл
+		если клиент уже есть, то не заводим его, а смотрим какой "вид входа" он указал при регистрации
+		если клиента нет, то заводим его в базе с активным статусом, затем смотрим какой "вид входа" он указал при регистрации
+		регистрируемый клиент должен указать "вид входа", и нам надо проверить, есть он уже в такой структуре
+		если клиент уже есть в структуре по указанному виду входа, то надо ругаться
+		если клиента нет в структуре по указанному виду входа, то надо завести его с неактивным статусом (в рамках структуры), затем перейти в личный кабинет нового клиента
+		*/
+		/*
+		var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
+		let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
+			if (errParent) { throw errParent; }
+			if (rowsParent.length == 0) {
+				res.send("<p>Неправильный идентификатор клиента ${nIDParent}</p><p><a href='/'>Вернуться на сайт</a></p>");
+				return;
+			}
+			else {
+				var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive
+								FROM Client cl 
+								WHERE (cl.Lastname = '${sLastname}' AND cl.Firstname = '${sFirstname}' AND (cl.Middlename IN ('${sMiddlename}', '') or cl.Middlename is null))
+								or (cl.Email = '${sEmail}') 
+								or (cl.IIN = '${sIIN}')`;
+				let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
+					if (errClient) { throw errClient; }
+					if (rowsClient.length == 0) {
+						var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
+											values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
+						let qryNewClient = db.query(insNewClient, function(errNewClient, resultNewClient, fieldsNewClient) {
+							if (errNewClient) { throw errNewClient; }
+							
+						});
+					}
+					else {
+						
+					}
+				});
+
+				var sqlInsertClient = `insert into Client(Lastname, Firstname, Middlename, Email)
+									values('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}')`;
+			}
+		});
+		*/
+		
+		
+		res.send("Онлайн-регистрация пока не доступна.<br><a href='/'>Вернуться на сайт</a><br />");
 		return;
 		//if(sPwd == ""){sPwd = "1234567";}
 	}
@@ -904,6 +1091,21 @@ app.post('/cab', function(req, res, next) {
 });
 
 
+app.get('/forgetpwd', function(req, res) {
+	res.send('<p><a href='/'>Вернуться на сайт</a></p>');
+});
+app.post('/forgetpwd', function(req, res) {
+	//var nIDClient = req.body.idclient;
+	var nIDClient = req.body.login;
+	var sClientFIO = "";
+	var sSQLClient = `select cl.ID, trim(concat(COALESCE(cl.Lastname,''),' ',COALESCE(cl.Firstname,''),' ',COALESCE(cl.Middlename,''))) FIO from Client cl where cl.ID = ${nIDClient}`;
+	let queryClient = db.query(sSQLClient, function(errClient, rowsClient){
+		if(errClient) {throw errClient;}
+		res.render('forgetpwd', {clientID: nIDClient, clientDataForget: rowsClient});
+	});
+});
+
+
 
 app.post('/newpwd', function(req, res) {
 	var nClientID = req.body.id;; //req.param('id');
@@ -1022,35 +1224,31 @@ app.get('/productprices', function(req, res) {
 	});
 });
 
+
 app.get('/sendemail', function(req, res) {
-	let transporter = nodeMailer.createTransport({
-		host: 'mail.diamondcity.kz',
-		port: 25,
-		auth: {
-			user: 'p-13908', //p-13908, diamondcity.kz, autosender@diamondcity.kz, diana_aidar01.01.2013@mail.ru
-			pass: 'Ayana2016@'
-		}
-	});
-	let mailOptions = {
-		from: 'autosender@diamondcity.kz', // sender address
-		to: 'kuanysh.tuktubayev@mail.ru', //list of receivers
-		subject: 'Тема письма', //Subject line
-		//text: 'Текст тела письма', //plain text body
-		html: '<b>Текст в формате html</b>' // html body
-		/*,attachments: [
-			{ // Use a URL as an attachment
-				filename: 'your-testla.png',
-				path: 'https://media.gettyimages.com/photos/view-of-tesla-model-s-in-barcelona-spain-on-september-10-2018-picture-id1032050330?s=2048x2048'
-			}
-		]*/
-	};
-	transporter.sendMail(mailOptions, (error, info) => {
-    	if (error) {
-			res.send(error);
-		}
-		//res.send('Message '+info.messageId+' sent: '+info.response+'');
-		res.send('Message sent');
-	});
+	var sSQL = "";
+	sSQL = `SELECT GetCountChildsForBonus(cl.ID, 1) ChildCount, cl.* 
+				FROM Client cl 
+				where cl.id > 1000 
+				and GetCountChildsForBonus(cl.ID, 1) > 115 
+				order by 1 desc`;
+	var sResult20000 = runQueryForMail(sSQL, "20 000");
+	
+	sSQL = `SELECT GetCountChildsForBonus(cl.ID, 2) ChildCount, cl.* 
+				FROM Client cl 
+				where cl.id > 1000 
+				and (GetCountChildsForBonus(cl.ID, 2) > 115 or GetCountChildsForBonus(cl.ID, 2) between 51 and 64 )
+				order by 1 desc`;
+	var sResult50000 = runQueryForMail(sSQL, "50 000");
+	
+	sSQL = `SELECT GetCountChildsForBonus(cl.ID, 4) ChildCount, cl.* 
+				FROM Client cl 
+				where cl.id > 1000 
+				and (GetCountChildsForBonus(cl.ID, 4) > 115 or GetCountChildsForBonus(cl.ID, 4) between 51 and 64)
+				order by 1 desc`;
+	var sResult200000 = runQueryForMail(sSQL, "200 000");
+	
+	res.send(sResult20000 +"<br>"+ sResult50000 +"<br>"+ sResult200000);
 });
 
 
@@ -1200,6 +1398,86 @@ app.get('/admproducts', function(req, res, next) {
 	});
 });
 
+app.get('/admproduct', function(req, res, next) {
+	var nAdminID = 0;
+	var sAdminLogin = "";
+	var sPwd = "";
+	var bIsAdm = true;
+	var sessData = req.session;
+	if(sessData.adminID > 0 && sessData.adminLogin != "" && sessData.adminPWD != ""){
+		nAdminID = sessData.adminID;
+		sAdminLogin = sessData.adminLogin;
+		sPwd = sessData.adminPWD;
+	}
+	else{
+		res.redirect('/admin');
+		return;
+	}
+	
+	var bIsNewProd = false;
+	
+	var nDelProdID = 0;
+	var sUpdProdName = "";
+	var bIsDelProdID = false;
+	
+	var bIsUpdProd = false;
+	var nUpdProdID = 0;
+	
+	if (sessData.IsNewProd > 0) {
+		bIsNewProd = sessData.IsNewProd;
+		sessData.IsNewProd = 0;
+	}
+	else if (sessData.DelProdID > 0) {
+		nDelProdID = sessData.DelProdID;
+		sUpdProdName = sessData.UpdProdName;
+		bIsDelProdID = true;
+		sessData.DelProdID = 0;
+		sessData.UpdProdName = "";
+	}
+	else if (sessData.UpdProdID > 0) {
+		nUpdProdID = sessData.UpdProdID;
+		sUpdProdName = sessData.UpdProdName;
+		bIsUpdProd = true;
+		sessData.UpdProdID = 0;
+		sessData.UpdProdName = "";
+	}
+	
+	
+	var postValues = req.body;
+	
+	var nProductID = req.query.pid;
+	if (!nProductID) {
+		sessData.ErrMsg = "Выберите продукт для редактирования";
+		//sessData.UpdProdID = 0;
+		//sessData.UpdProdName = "";
+		res.redirect('/admproducts');
+		return;
+	}
+	
+	let sqlPr = "SELECT p.ID, p.Name, p.NamePrice, p.Price, p.Descr, p.ImgPath, p.ImgAlt, p.isActual, p.IsShowProd, p.IsShowPrice "
+		+"FROM Product p "
+		+"WHERE p.isActual = 1 and p.ID = " +nProductID+ " ";
+	let qryPr = db.query(sqlPr, function(errPr, prResult){
+		if(errPr) {throw errPr;}
+		var sErrMsg = "";
+		if (sessData.ErrMsg != "") {
+			sErrMsg = sessData.ErrMsg;
+		}
+		if (bIsNewProd) {
+			res.render('admhome', {isAdmin: bIsAdm, adminID: nAdminID, adminLogin: sAdminLogin, adminPwd: sPwd, productPage: true, productIsNew: bIsNewProd, productData: prResult, errMsg: sErrMsg});
+		}
+		else if (bIsDelProdID) {
+			res.render('admhome', {isAdmin: bIsAdm, adminID: nAdminID, adminLogin: sAdminLogin, adminPwd: sPwd, productPage: true, prodIsDel: bIsDelProdID, prodDelID: nDelProdID, prodUpdName: sUpdProdName, productData: prResult, errMsg: sErrMsg});
+		}
+		else if (bIsUpdProd) {
+			res.render('admhome', {isAdmin: bIsAdm, adminID: nAdminID, adminLogin: sAdminLogin, adminPwd: sPwd, productPage: true, prodIsUpd: bIsUpdProd, prodUpdID: nUpdProdID, prodUpdName: sUpdProdName, productData: prResult, errMsg: sErrMsg});
+		}
+		else {
+			res.render('admhome', {isAdmin: bIsAdm, adminID: nAdminID, adminLogin: sAdminLogin, adminPwd: sPwd, productPage: true, productData: prResult, errMsg: sErrMsg});
+		}
+	});
+});
+
 app.post('/admsaveprod/:idproduct', function(req, res, next){
 	var nAdminID = 0;
 	var sAdminLogin = "";
@@ -1219,7 +1497,7 @@ app.post('/admsaveprod/:idproduct', function(req, res, next){
 		return;
 	}
 	var form = new formidable.IncomingForm();
-	form.parse(req, function(err0, fields, files) {
+    form.parse(req, function(err0, fields, files) {
 		if(err0) { return res.redirect(303, '/error'); }
 		//var postValues = req.body;
 		var postValues = fields;
@@ -1488,9 +1766,13 @@ app.get('/admclients', function(req, res, next) {
 	
 	let sqlCl = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, 
 					DATE_FORMAT(cl.Birthdate, '%Y-%m-%d') clBirthdate, cl.Gender, cl.Email, 
-					cl.IIN, cl.PasspNum, cl.IDCountryCitz, ctr.Shortname CountryShortName 
+					cl.IIN, cl.PasspNum, cl.IDCountryCitz, ctr.Shortname CountryShortName, 
+					s20.ID as s20_ID, s50.ID as s50_ID, s200.ID as s200_ID
 				FROM Client cl 
 				left join Country ctr on ctr.ID = cl.IDCountryCitz 
+				left join Struct s20 on s20.IDClient = cl.ID and s20.IsActive = 1 and s20.IDPlanType = 1 
+				left join Struct s50 on s50.IDClient = cl.ID and s50.IsActive = 1 and s50.IDPlanType = 2 
+				left join Struct s200 on s200.IDClient = cl.ID and s200.IsActive = 1 and s200.IDPlanType = 4 
 				where cl.ID >= 1000000000 `;
 	let qryCl = db.query(sqlCl, function(errCl, clResult){
 		if(errCl) {throw errCl;}
@@ -1506,30 +1788,47 @@ app.get('/admclients', function(req, res, next) {
 				sessData.ErrMsg = "";
 			}
 			
-			if (bIsNewClient) {
-				res.render('admhome', {isAdmin: bIsAdm, 
-									   adminID: nAdminID,
-									   adminLogin: sAdminLogin, 
-									   adminPwd: sPwd, 
-									   clientPage: true, 
-									   clientList: clResult, 
-									   countryList: countryResult,
-									   clientIsNew: bIsNewClient,
-									   clientNewFIO: sNewClientFIO,
-									   errMsg: sErrMsg
-									  });
-			}
-			else {
-				res.render('admhome', {isAdmin: bIsAdm, 
-									   adminID: nAdminID,
-									   adminLogin: sAdminLogin, 
-									   adminPwd: sPwd, 
-									   clientPage: true, 
-									   clientList: clResult, 
-									   countryList: countryResult,
-									   errMsg: sErrMsg
-									  });
-			}
+			let sqlPlanType = `SELECT pt.ID IDPlanType, concat(pt.AmountEnter, '-', pt.Name) PlanTypeName FROM PlanType pt where pt.IsActual = 1 `;
+			let qryPlanType = db.query(sqlPlanType, function(errPlanType, plantypeResult){
+				if(errPlanType) {throw errPlanType;}
+			
+				let sqlParentCl = `SELECT cl.ID IDClientP, 
+									concat(COALESCE(cl.ID,0), ' ', COALESCE(cl.Lastname,''), ' ', COALESCE(cl.Firstname,''), ' ', COALESCE(cl.Middlename,'')) ParentFIO 
+								FROM Client cl 
+								where cl.ID >= 1000000000
+								order by cl.ID `;
+				let qryParentCl = db.query(sqlParentCl, function(errParentCl, parentClResult){
+					if(errParentCl) {throw errParentCl;}
+					if (bIsNewClient) {
+							res.render('admhome', {isAdmin: bIsAdm, 
+												   adminID: nAdminID,
+												   adminLogin: sAdminLogin, 
+												   adminPwd: sPwd, 
+												   clientPage: true, 
+												   clientList: clResult, 
+												   countryList: countryResult,
+												   clientIsNew: bIsNewClient,
+												   clientNewFIO: sNewClientFIO,
+												   parentClList: parentClResult,
+												   plantypeList: plantypeResult,
+												   errMsg: sErrMsg
+												  });
+					}
+					else {
+						res.render('admhome', {isAdmin: bIsAdm, 
+											   adminID: nAdminID,
+											   adminLogin: sAdminLogin, 
+											   adminPwd: sPwd, 
+											   clientPage: true, 
+											   clientList: clResult, 
+											   countryList: countryResult,
+											   parentClList: parentClResult,
+											   plantypeList: plantypeResult,
+											   errMsg: sErrMsg
+											  });
+					}
+				});
+			});
 		});
 	});
 });
@@ -1709,6 +2008,9 @@ app.post('/admnewclient', function(req, res, next){
 		var nClCountryCitz = postValues.nClCountryCitz;
 		var sClIIN = postValues.txClIIN;
 		var sClPasspNum = postValues.txClPasspNum;
+		var nClStrPlanType = postValues.nClStrPlanType;
+		var nClStrParent = postValues.nClStrParent;
+		var sClStrRegdate = postValues.txClStrRegdate;
 		
 		if (!sClMiddlename) { sClMiddlename = ""; }
 		if (!sClEmail) { sClEmail = ""; }
@@ -1716,15 +2018,24 @@ app.post('/admnewclient', function(req, res, next){
 		if (!sClPasspNum) { sClPasspNum = ""; }
 		if (!nClGender || nClGender == "") { nClGender = 0; }
 		if (!nClCountryCitz || nClCountryCitz == "") { nClCountryCitz = 1; }
+		if (!nClStrPlanType || nClStrPlanType == "") { nClStrPlanType = 1; }
+		if (!nClStrParent || nClStrParent == "") { nClStrParent = 1000000000; }
 		
 		sqlIns = `insert into Client (Lastname, Firstname, Middlename, Birthdate, Gender, Email, IDCountryCitz, IIN, PasspNum)
 				values('`+sClLastname+`', '`+sClFirstname+`', '`+sClMiddlename+`', DATE_FORMAT('`+sClBirthdate+`', '%Y-%m-%d'), `+nClGender+`, '`+sClEmail+`', `+nClCountryCitz+`, '`+sClIIN+`', '`+sClPasspNum+`')`;
 		
 		let qryClIns = db.query(sqlIns, function(err, result) {
 			if (err) { throw err; }
+			nClientID = result.insertId;
 			sessData.IsNewClient = true;
 			sessData.NewClientFIO = sClLastname+' '+sClFirstname+' '+sClMiddlename;
-			res.redirect('/admclients');
+			var sqlInsStr = `insert into Struct (IDPlanType, IDClient, IDClParent, RegDate)
+						values(${nClStrPlanType}, ${nClientID}, ${nClStrParent}, DATE_FORMAT('${sClStrRegdate}', '%Y-%m-%d'))`;
+			//res.send("<p>nClientID="+nClientID+"</p><p>sqlInsStr="+sqlInsStr+"</p>");
+			let qryClInsStr = db.query(sqlInsStr, function(errStr, resultStr) {
+				if (errStr) { throw errStr; }
+				res.redirect('/admclients');
+			});
 		});
     });
 });

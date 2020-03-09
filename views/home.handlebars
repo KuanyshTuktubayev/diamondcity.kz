@@ -85,44 +85,74 @@
         <form action="/cab" method="post" name="CabLoginForm">
             <input type="text" name="login" id="login" placeholder="ID" />
             <input type="password" name="pwd" id="pwd" placeholder="пароль" />
-            <br />
-            <input type="text" name="Lastname" id="Lastname" placeholder="Фамилия" hidden />
-			<input type="text" name="Firstname" id="Firstname" placeholder="Имя" hidden />
-			<input type="text" name="Middlename" id="Middlename" placeholder="Отчество" hidden />
-			<br />
-			<input type="email" name="email" id="email" placeholder="email" hidden />
-			<br />
-			<label for="Mobilephone"id="lbMobphone" hidden>Моб. тел. (7-7ХХ-ХХ-ХХ)</label>
-			<input type="tel" name="Mobilephone" id="Mobilephone" pattern="7-7[0-9]{2}-[0-9]{2}-[0-9]{2}" value="7-700-00-00" hidden />
-			<br />
-            <input type="text" name="IDParent" id="IDParent" placeholder="ID пригласившего" hidden />
-            <br />
+            <div id="divRegNewClient" style="display: none;">
+				<br />
+				<input type="text" name="Lastname" id="Lastname" placeholder="Фамилия" hidden />
+				<input type="text" name="Firstname" id="Firstname" placeholder="Имя" hidden />
+				<input type="text" name="Middlename" id="Middlename" placeholder="Отчество" hidden />
+				<br />
+				<input type="text" name="IIN" id="IIN" placeholder="ИИН" hidden />
+				<input type="email" name="email" id="email" placeholder="email" hidden />
+				<br />
+				<label for="Mobilephone"id="lbMobphone" hidden>Моб. тел. (7-7ХХ-ХХ-ХХ)</label>
+				<input type="tel" name="Mobilephone" id="Mobilephone" pattern="7-7[0-9]{2}-[0-9]{3}-[0-9]{2}-[0-9]{2}" value="7-700-000-00-00" hidden />
+				<br />
+				<input type="text" name="IDParent" id="IDParent" placeholder="ID пригласившего" hidden />
+				<br />
+			</div>
             <input type="submit" class="btn btn-primary" name="btnLogin" name="btnLogin" value="Войти" />
+			<button class="btn btn-link" formaction="/forgetpwd" id="linkForgetPwd">Забыли пароль?</button>
             <br />
+			<div id="divMSGForgetPwd"></div>
             <input type="checkbox" name="registration" id="registration" /> Регистрация
         </form>
         <script>
             $('#registration').click(function() {
                 if ($("#registration").is(":checked")) {
-                    $('#login').hide(1000);
+                    $("#divRegNewClient").show();
+					
+					$('#login').hide(1000);
 					$('#Lastname').show(1000);
                     $('#Firstname').show(1000);
 					$('#Middlename').show(1000);
                     $('#IDParent').show(1000);
 					$('#email').show(1000);
+					$('#IIN').show(1000);
 					$('#lbMobphone').show(1000);
 					$('#Mobilephone').show(1000);
                 } else {
+					$("#divRegNewClient").hide();
+					
 					$('#login').show(1000);
                     $('#Lastname').hide(1000);
                     $('#Firstname').hide(1000);
 					$('#Middlename').hide(1000);
                     $('#IDParent').hide(1000);
 					$('#email').hide(1000);
+					$('#IIN').hide(1000);
 					$('#lbMobphone').hide(1000);
 					$('#Mobilephone').hide(1000);
                 }
             });
+			$("#linkForgetPwd").click(function() {
+				console.log("forgetPWD clicked");
+				var nIDClient = $('#login').val();
+				console.log("ID="+nIDClient);
+				/*$.ajax({
+					url: '/forgetpwd',
+					method: "post",
+					data: {
+						idclient: nIDClient
+					},
+					//dataType: "json",
+					//cache: false,
+					success: function (data) {
+						var msg = '<p>Пароль отправлен на ваш email</p>';
+						$("#divMSGForgetPwd").val() = msg;
+						console.log(data);
+					}
+				});*/
+			});
         </script>
     </div>
 </div>

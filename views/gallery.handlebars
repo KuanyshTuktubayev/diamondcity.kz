@@ -1,0 +1,747 @@
+<div class="container">
+		<div class="row">
+			<div class="col-xs-12 text-left" id="gallery">
+				<h3 class=" wow fadeInLeftBig">Галерея</h3>
+			</div>
+			
+			{{#if listFiles}}
+				{{#each listFiles}}
+					<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+						<div class="_production_block wow flipInY">
+							{{#iff this.type '==' 'FILE'}}
+							<a href="#" data-target="#gallery-{{this.id}}" data-toggle="modal">
+								<img src="{{this.imgPath}}" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+							</a>
+							{{/iff}}
+							{{#iff this.type '==' 'DIR'}}
+							<a href="/gallery/{{this.imgPath}}">
+								{{this.imgPath}}
+							</a>
+							{{/iff}}
+						</div>
+					</div>
+				{{/each}}
+			{{/if}}
+			
+			<!--
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-1" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/CTA_7183.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-2" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/CTA_7184.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-3" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/CTA_7436.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-4" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/CTA_7536.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505181" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3417-05-05-18-06-36.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505182" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3423-05-05-18-06-36.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505183" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3449-05-05-18-06-39.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505184" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3465-05-05-18-06-39.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505185" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3580-05-05-18-06-49.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505186" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_3598-05-05-18-06-49.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505187" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_7621-13-10-18-12-19.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505188" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_7624-13-10-18-12-19.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-0505189" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_7625-13-10-18-12-19.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-05051810" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/IMG_7627-13-10-18-12-19.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			
+			
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh1" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7178.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh2" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7183.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh3" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7198.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh4" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7216.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh5" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7259.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh6" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/CTA_7272.jpg" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-sh7" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/shmk/IMG_7859-25-10-18-10-40.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			
+			
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr1" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_0684-09-01-19-05-57.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr2" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_0843-18-01-19-11-48.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr3" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_0844-18-01-19-11-48.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr4" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_3173-26-04-18-09-42.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr5" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_3199-30-04-18-04-34.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr6" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_3925-12-05-18-05-12.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr7" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_3926-12-05-18-05-12.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr8" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_3927-12-05-18-05-12.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr9" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_5682-22-07-18-11-23.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr10" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_9408-09-12-18-01-27.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr11" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/IMG_9514-09-12-18-01-27.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr12" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/Балауса Нурия.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr13" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/Золотое кольцо, балауса Райкул.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr14" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/мультиварка.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			<div class="col-md-4 col-sm-6 col-xs-12 text-center">
+				<div class="_production_block wow flipInY">
+					<a href="#" data-target="#gallery-nagr15" data-toggle="modal">
+						<img src="./wp-content/uploads/gallery/nagr/мультиварка2.JPG" style='height: 50%; width: 50%; object-fit: contain' alt="photo">
+                    </a>
+				</div>
+			</div>
+			-->
+		</div>
+	</div>
+
+
+
+
+<!-- --------------------------------------- -->
+<!-- --------------------------------------- -->
+<!-- --------------------------------------- -->
+<!-- ZOOM -->
+
+{{#if listFiles}}
+	{{#each listFiles}}
+		{{#iff this.id '>' 0}}
+		<div id="gallery-{{this.id}}" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content text-center">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					</div>
+					<div class="modal-body text-product">
+						<img src="{{this.imgPath}}" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+					</div>
+				</div>
+			</div>
+		</div>
+		{{/iff}}
+	{{/each}}
+{{/if}}
+<!--
+<div id="gallery-1" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/CTA_7183.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-2" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/CTA_7184.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-3" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/CTA_7436.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-4" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/CTA_7536.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505181" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3417-05-05-18-06-36.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505182" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3423-05-05-18-06-36.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505183" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3449-05-05-18-06-39.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505184" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3465-05-05-18-06-39.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505185" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3580-05-05-18-06-49.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505186" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_3598-05-05-18-06-49.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505187" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_7621-13-10-18-12-19.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505188" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_7624-13-10-18-12-19.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-0505189" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_7625-13-10-18-12-19.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-05051810" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/IMG_7627-13-10-18-12-19.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh1" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7178.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh2" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7183.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh3" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7198.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh4" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7216.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh5" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7259.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh6" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/CTA_7272.jpg" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-sh7" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/shmk/IMG_7859-25-10-18-10-40.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr1" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_0684-09-01-19-05-57.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr2" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_0843-18-01-19-11-48.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr3" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_0844-18-01-19-11-48.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr4" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_3173-26-04-18-09-42.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr5" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_3199-30-04-18-04-34.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr6" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_3925-12-05-18-05-12.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr7" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_3926-12-05-18-05-12.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr8" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_3927-12-05-18-05-12.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr9" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_5682-22-07-18-11-23.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr10" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_9408-09-12-18-01-27.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr11" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/IMG_9514-09-12-18-01-27.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr12" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/Балауса Нурия.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr13" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/Золотое кольцо, балауса Райкул.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr14" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/мультиварка.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gallery-nagr15" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content text-center">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body text-product">
+                <img src="./wp-content/uploads/gallery/nagr/мультиварка2.JPG" style='height: 100%; width: 100%; object-fit: contain' alt="photo">
+            </div>
+        </div>
+    </div>
+</div>
+-->

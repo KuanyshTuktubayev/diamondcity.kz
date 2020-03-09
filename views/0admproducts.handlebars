@@ -1,0 +1,43 @@
+<div id="ProductListDiv">
+	страница редактирования продукции
+	<p id='test_p'></p>
+	{{#each proditems}}
+	<div>
+		<div>
+			<img src="./wp-content/uploads/prods/{{this.ImgPath}}" />
+		</div>
+		<div>
+			<span id="prod_{{this.ID}}">{{this.ID}}</span>
+			<h4>{{this.Name}}</h4>
+			<p>Цена: {{this.Price}}</p>
+			<p>{{this.Descr}}</p>
+		</div>
+	</div>
+	<hr />
+	<br />
+	{{/each}}
+</div>
+<script>
+	$(document).ready(function(){
+		$('#test_p').html = 'doc ready';
+		/*$.ajax({
+			url: '/loadprods',
+			method: "GET",
+			data: {},
+			dataType: "json",
+			cache: false,
+			success: function (data) {
+				 var tbl = "<th>Картина</th><th>Продукт</th><th>Цена</th><th>Описание</th>";
+				$.each(data, function (i, val) {
+					var tr = "<tr>" +
+						"<td><img src='./wp-content/uploads/prods/"+ val.ImgPath + "' /></td>" +
+						"<td>"+ val.name + "</td>" +
+						"<td>"+ val.price + "</td>" +
+						"<td>"+ val.descr + "</td>" +
+						"</tr>";
+					$(tbl+tr).appendTo("#prod_items");
+				});
+			}
+		});*/
+	});
+</script>

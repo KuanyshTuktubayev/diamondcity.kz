@@ -27,7 +27,7 @@
 					<div class="card" id="div_OldClient">
 						{{#each clientData}}
 							<div class="card-body">
-								<a class="btn btn-primary" href="/admclients">Назад</a>
+								<a class="btn btn-primary" href="/admclients">Назад к списку</a>
 								<h3>Редактирование клиента {{this.ID}} {{this.Lastname}} {{this.Firstname}} {{this.Middlename}}</h3>
 								<!--<form id="frmClient{{this.ID}}" action="/admclient/{{this.ID}}" method="post">-->
 								<form id="frmClient{{this.ID}}" method="post" enctype="multipart/form-data">
@@ -170,7 +170,42 @@
 								<div class="form-group">
 									<input type="text" class="form-control" id="cl_passpnum_0" name="txClPasspNum" value="{{this.PasspNum}}" />
 								</div>
+								
+								<div class="form-group">
+									<label for="cl_plantype_0">Вид входа</label>
+									<div class="form-group">
+										<select id="cl_plantype_0" name="nClStrPlanType">
+											{{#if plantypeList}}
+												{{#each plantypeList}}
+													<option value="{{this.IDPlanType}}" {{#iff this.IDPlanType '==' 1}} selected {{/iff}}>{{this.PlanTypeName}}</option> 
+												{{/each}}
+											{{else}}
+												<option value="1" selected>20'000-Start</option>
+												<option value="2">50'000-Сапфир</option>
+												<option value="4">200'000-VIP</option>
+											{{/if}}
+										</select>
+									</div>
 
+									<label for="cl_parent_0">Спонсор</label>
+									<div class="form-group">
+										<select id="cl_parent_0" name="nClStrParent">
+											{{#if parentClList}}
+												{{#each parentClList}}
+													<option value="{{this.IDClientP}}" {{#iff this.IDClientP '==' 1}} selected {{/iff}}>{{this.ParentFIO}}</option> 
+												{{/each}}
+											{{else}}
+												<option value="1000000000" selected>1000000000 Молдашева Зауре</option> 
+											{{/if}}
+										</select>
+									</div>
+									
+									<label for="cl_clstrregdate_0">Дата регистрации в структуре</label>
+									<div class="form-group">
+										<input type="date" class="form-control" id="cl_clstrregdate_0" name="txClStrRegdate" value="{{this.StrRegDate}}" />
+									</div>
+								</div>
+								
 								<!--<button class="btn btn-primary" id="btnSaveClient0" name="btnSaveClient">Сохранить</button>-->
 								<button class="btn btn-primary" id="btnSaveClient0" name="btnSaveClient" formaction="/admnewclient">Сохранить</button>
 							</form>
@@ -190,11 +225,13 @@
 							if ( $("#div_NewClient").css('display') == 'none' || $("#div_NewClient").css("visibility") == "hidden" ){
 								//$("#div_NewClient").show();
 								$("#div_NewClient").css("display", "block");
+								$('#btnNewClient').html('Назад');
 								$("#div_AllClient").css("display", "none");
 							}
 							else {
 								//$("#div_NewClient").hide();
 								$("#div_NewClient").css("display", "none");
+								$('#btnNewClient').html('Новый клиент');
 								$("#div_AllClient").css("display", "block");
 							}
 						});
@@ -218,6 +255,9 @@
 									<th scope="col">ИИН</th>
 									<th scope="col">Паспорт/Уд.личн.</th>
 									<th scope="col">Страна гражданства</th>
+									<th scope="col">20'000</th>
+									<th scope="col">50'000</th>
+									<th scope="col">200'000</th>
 								</tr>
 							</thead>
 							<tbody id="client_items">
@@ -234,6 +274,9 @@
 									<td>{{this.IIN}}</td>
 									<td>{{this.PasspNum}}</td>
 									<td>{{this.CountryShortName}}</td>
+									<td>{{#if this.s20_ID}}<a gref="#">есть</a>{{else}}нет{{/if}}</td>
+									<td>{{#if this.s50_ID}}<a gref="#">есть</a>{{else}}нет{{/if}}</td>
+									<td>{{#if this.s200_ID}}<a gref="#">есть</a>{{else}}нет{{/if}}</td>
 								</tr>
 								{{/each}}
 							</tbody>
@@ -258,138 +301,182 @@
 					</script>
 				{{else}}
 					{{#if clientData}}
+						
 					{{else}}
 						<p>Заведенных клиентов нет</p>
 					{{/if}}
 				{{/if}}
 			{{else}}
 				{{#if productPage}}
-					<button class="btn btn-primary" id="btnNewProduct" name="btnNewProduct">Новый продукт</button>
-					<div id="actionMessageDiv">
-						{{#if productIsNew}}
-							<p>Новый продукт заведен. Пролистайте вниз до конца, чтобы найти его и отредактировать</p>
-						{{/if}}
-						{{#if prodIsDel}}
-							<p>Продукт {{prodUpdName}} удален</p>
-						{{/if}}
-						{{#if prodIsUpd}}
-							<p>Продукт {{prodUpdName}} сохранен</p>
-						{{/if}}
-						{{#if errMsg}}
-							<p>{{errMsg}}</p>
-						{{/if}}
-					</div>
-			
-					{{>frm_newproduct}}
-			
-					{{#if productList}}
-						<div class="card" id="div_AllProduct">
-							<p>-----------------</p>
-							<p><strong>=== Заведенные продукты: ===</strong></p>
-							<p>-----------------</p>
-						{{#each productList}}
-							<div class="card-body">
-								<form id="frm{{this.ID}}" method="post" enctype="multipart/form-data">
-									
-									<div class="form-group">
-										<label>Сменить рисунок</label>
-										<div class="input-group">
-											<span class="input-group-btn">
-												<span class="btn btn-default btn-file">
-													<input type="file" id="imgInp_{{this.ID}}" name='fimgFile' accept="image/*">
+					{{#if productData}}
+						<div id="actionMessageDiv">
+							{{#if productIsNew}}
+								<p>Новый продукт заведен. Пролистайте вниз до конца, чтобы найти его и отредактировать</p>
+							{{/if}}
+							{{#if prodIsDel}}
+								<p>Продукт {{prodUpdName}} удален</p>
+							{{/if}}
+							{{#if prodIsUpd}}
+								<p>Продукт {{prodUpdName}} сохранен</p>
+							{{/if}}
+							{{#if errMsg}}
+								<p>{{errMsg}}</p>
+							{{/if}}
+						</div>
+						<div class="card" id="div_ProductData">
+							{{#each productData}}
+								<div class="card-body">
+									<a class="btn btn-primary" id="btnCancel{{this.ID}}" name="btncancel" href="/admproducts">Назад к списку</a>
+									<form id="frm{{this.ID}}" method="post" enctype="multipart/form-data">
+
+										<div class="form-group">
+											<label>Сменить рисунок</label>
+											<div class="input-group">
+												<span class="input-group-btn">
+													<span class="btn btn-default btn-file">
+														<input type="file" id="imgInp_{{this.ID}}" name='fimgFile' accept="image/*">
+													</span>
 												</span>
-											</span>
-											<input type="text" class="form-control" readonly name="txImgFileName" style="display: none;">
+												<input type="text" class="form-control" readonly name="txImgFileName" style="display: none;">
+											</div>
+											<img id='imgUpload_{{this.ID}}' src="{{this.ImgPath}}" name='imgUpload' width="200px" height="200px" />
 										</div>
-										<img id='imgUpload_{{this.ID}}' src="{{this.ImgPath}}" name='imgUpload' width="200px" height="200px" />
-									</div>
-									<script>
-										$(document).ready( function() {
-											$(document).on('change', '.btn-file :file', function() {
-												var input = $(this),
-													label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-												input.trigger('fileselect', [label]);
-											});
-											$('.btn-file :file').on('fileselect', function(event, label) {
-												var input = $(this).parents('.input-group').find(':text'),
-													log = label;
-												if( input.length ) {
-													input.val(log);
-												} else {
-													if( log ) alert(log);
-												}
-											});
-											function readURL(input) {
-												if (input.files && input.files[0]) {
-													var reader = new FileReader();
-													reader.onload = function (e) {
-														$('#imgUpload_{{this.ID}}').attr('src', e.target.result);
+										<script>
+											$(document).ready( function() {
+												$(document).on('change', '.btn-file :file', function() {
+													var input = $(this),
+														label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+													input.trigger('fileselect', [label]);
+												});
+												$('.btn-file :file').on('fileselect', function(event, label) {
+													var input = $(this).parents('.input-group').find(':text'),
+														log = label;
+													if( input.length ) {
+														input.val(log);
+													} else {
+														if( log ) alert(log);
 													}
-													reader.readAsDataURL(input.files[0]);
+												});
+												function readURL(input) {
+													if (input.files && input.files[0]) {
+														var reader = new FileReader();
+														reader.onload = function (e) {
+															$('#imgUpload_{{this.ID}}').attr('src', e.target.result);
+														}
+														reader.readAsDataURL(input.files[0]);
+													}
 												}
-											}
-											$("#imgInp_{{this.ID}}").change(function(){
-												readURL(this);
-											}); 	
-										});
-									</script>
-									
-										<span id="prod_{{this.ID}}" style="display: none;">{{this.ID}}</span>
-										
-										<label for="name_{{this.ID}}">Продукт:</label>
-										<div class="form-group">
-											<input type="text" class="form-control" id="name_{{this.ID}}" name="txName" value="{{this.Name}}" />
-										</div>
-									
-										<label for="nameForPrice_0">Название для прайса:</label>
-										<div class="form-group">
-											<input type="text" class="form-control" id="nameForPrice_0" name="txNameForPrice" value="{{this.NamePrice}}" />
-										</div>
-								
-										<label for="imgAlt_0">Кодовое название продукта (латинскими буквами)</label>
-										<div class="form-group">
-											<input type="text" class="form-control" id="imgAlt_0" name="txImgAlt" value="{{this.ImgAlt}}" />
-										</div>
+												$("#imgInp_{{this.ID}}").change(function(){
+													readURL(this);
+												}); 	
+											});
+										</script>
 
-										<label for="price_{{this.ID}}">Цена (kzt):</label>
-										<div class="form-group">
-											<input type="text" class="form-control" id="price_{{this.ID}}" name="txPrice" value="{{this.Price}}" />
-										</div>
-										
-										<div class="form-group">
-											<label for="isShowProd_0">Показывать в секторе "Продукция"?</label>
-											<input type="checkbox" id="isShowProd_0" name="isShowProd" {{#if this.IsShowProd}} checked {{/if}} />
-										</div>
+											<span id="prod_{{this.ID}}" style="display: none;">{{this.ID}}</span>
 
-										<div class="form-group">
-											<label for="isShowPrice_0">Показывать в секторе "Прайс-лист"?</label>
-											<input type="checkbox" id="isShowPrice_0" name="isShowPrice" {{#if this.IsShowPrice}} checked {{/if}} />
-										</div>
+											<label for="name_{{this.ID}}">Продукт:</label>
+											<div class="form-group">
+												<input type="text" class="form-control" id="name_{{this.ID}}" name="txName" value="{{this.Name}}" />
+											</div>
 
-										<label for="descr_{{this.ID}}">Описание:</label>
-										<div class="form-group">
-											<textarea type="text" class="form-control" id="descr_{{this.ID}}" name="txDescr" rows="11" cols="103">{{this.Descr}}</textarea>
-										</div>
+											<label for="nameForPrice_0">Название для прайса:</label>
+											<div class="form-group">
+												<input type="text" class="form-control" id="nameForPrice_0" name="txNameForPrice" value="{{this.NamePrice}}" />
+											</div>
 
-									<button class="btn btn-primary" id="btnSave{{this.ID}}" name="btnSave" formaction="/admsaveprod/{{this.ID}}">Сохранить</button>
-									<button class="btn btn-primary" id="btnDel{{this.ID}}" name="btnDelProd" formaction="/admdelprod/{{this.ID}}">Удалить</button>
-								</form>
-							</div>
-							<script>
-								var editor = new Simditor({
-								  textarea: $('#descr_{{this.ID}}')
-								  //optional options
-								});
-							</script>
-							<hr>
-							<p>-----------------</p>
-							<p>-----------------</p>
-							<p>-----------------</p>
-							<br />
-						{{/each}}
+											<label for="imgAlt_0">Кодовое название продукта (латинскими буквами)</label>
+											<div class="form-group">
+												<input type="text" class="form-control" id="imgAlt_0" name="txImgAlt" value="{{this.ImgAlt}}" />
+											</div>
+
+											<label for="price_{{this.ID}}">Цена (kzt):</label>
+											<div class="form-group">
+												<input type="text" class="form-control" id="price_{{this.ID}}" name="txPrice" value="{{this.Price}}" />
+											</div>
+
+											<div class="form-group">
+												<label for="isShowProd_0">Показывать в секторе "Продукция"?</label>
+												<input type="checkbox" id="isShowProd_0" name="isShowProd" {{#if this.IsShowProd}} checked {{/if}} />
+											</div>
+
+											<div class="form-group">
+												<label for="isShowPrice_0">Показывать в секторе "Прайс-лист"?</label>
+												<input type="checkbox" id="isShowPrice_0" name="isShowPrice" {{#if this.IsShowPrice}} checked {{/if}} />
+											</div>
+
+											<label for="descr_{{this.ID}}">Описание:</label>
+											<div class="form-group">
+												<textarea type="text" class="form-control" id="descr_{{this.ID}}" name="txDescr" rows="11" cols="103">{{this.Descr}}</textarea>
+											</div>
+
+										<button class="btn btn-primary" id="btnSave{{this.ID}}" name="btnSave" formaction="/admsaveprod/{{this.ID}}">Сохранить</button>
+										<button class="btn btn-primary" id="btnDel{{this.ID}}" name="btnDelProd" formaction="/admdelprod/{{this.ID}}">Удалить</button>
+									</form>
+								</div>
+								<script>
+									var editor = new Simditor({
+									  textarea: $('#descr_{{this.ID}}')
+									  //optional options
+									});
+								</script>
+								<hr>
+								<br />
+								<br />
+							{{/each}}
 						</div>
 					{{else}}
-						<p>Заведенных продуктов нет</p>
+						<button class="btn btn-primary" id="btnNewProduct" name="btnNewProduct">Новый продукт</button>
+						<div id="actionMessageDiv">
+							{{#if productIsNew}}
+								<p>Новый продукт заведен. Пролистайте вниз до конца, чтобы найти его и отредактировать</p>
+							{{/if}}
+							{{#if prodIsDel}}
+								<p>Продукт {{prodUpdName}} удален</p>
+							{{/if}}
+							{{#if prodIsUpd}}
+								<p>Продукт {{prodUpdName}} сохранен</p>
+							{{/if}}
+							{{#if errMsg}}
+								<p>{{errMsg}}</p>
+							{{/if}}
+						</div>
+			
+						{{>frm_newproduct}}
+					
+						{{#if productList}}
+							<div class="card" id="div_AllProduct">
+								<p>-----------------</p>
+								<p><strong>=== Заведенные продукты: ===</strong></p>
+								<p>-----------------</p>
+
+								<table class="table table-hover table-bordered">
+									<thead>
+										<tr>
+											<th scope="col"  style="display: none;">ID</th>
+											<th scope="col">Название</th>
+											<th scope="col">Название для прайса</th>
+											<th scope="col">Цена (kzt)</th>
+											<th scope="col">"Продукция"</th>
+											<th scope="col">"Прайс-лист"</th>
+										</tr>
+									</thead>
+									<tbody id="client_items">
+										{{#each productList}}
+										<tr>
+											<th scope="row" style="display: none;">{{this.ID}}</th>
+											<th scope="row"><a href="/admproduct?pid={{this.ID}}">{{this.Name}}</a></th>
+											<td>{{this.NamePrice}}</td>
+											<td>{{this.Price}}</td>
+											<td>{{#if this.IsShowProd}} показывать {{else}} скрыть {{/if}} </td>
+											<td>{{#if this.IsShowPrice}} показывать {{else}} скрыть {{/if}} </td>
+										</tr>
+										{{/each}}
+									</tbody>
+								</table>
+							</div>
+						{{else}}
+							<p>Заведенных продуктов нет</p>
+						{{/if}}
 					{{/if}}
 				{{/if}}
 			{{/if}}
