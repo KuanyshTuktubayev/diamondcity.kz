@@ -12,7 +12,8 @@ var nodeMailer = require('nodemailer');
 
 //create connection
 const db = mysql.createConnection({
-	host: 'localhost',
+	host: '185.98.7.116', //'localhost',
+	port: 3306,
 	user: 'rootDC',
 	password: 'Root@123',
 	database: 'p-13908_DCReal'
@@ -872,19 +873,122 @@ app.post('/cab', function(req, res, next) {
 		var sIIN = req.body.IIN;
 		var sMobphone = req.body.Mobilephone;
 		var nIDParent = req.body.IDParent;
+		var nIDPlanType = req.body.IDPlanType;
 		var sPwd = req.body.pwd;
 		
 		/*
 		надо проверить IDParent
 		если IDParent отсутствует в базе, то ругаемся
 		если IDParent есть, то проверим существование регистрируемого клиента
-		может быть регистрируемый клиент уже есть, надо проверить по ФИО, емайл
+		может быть регистрируемый клиент уже есть, надо проверить по ФИО, емайл, ИИН
 		если клиент уже есть, то не заводим его, а смотрим какой "вид входа" он указал при регистрации
-		если клиента нет, то заводим его в базе с активным статусом, затем смотрим какой "вид входа" он указал при регистрации
+		если клиента нет, то заводим его в базе с неактивным статусом, затем смотрим какой "вид входа" он указал при регистрации
 		регистрируемый клиент должен указать "вид входа", и нам надо проверить, есть он уже в такой структуре
 		если клиент уже есть в структуре по указанному виду входа, то надо ругаться
 		если клиента нет в структуре по указанному виду входа, то надо завести его с неактивным статусом (в рамках структуры), затем перейти в личный кабинет нового клиента
 		*/
+		var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive 
+						FROM Client cl 
+						WHERE (UCase(cl.Lastname) = UCase('${sLastname}') AND UCase(cl.Firstname) = UCase('${sFirstname}') AND (UCase(cl.Middlename) IN (UCase('${sMiddlename}'), '') or cl.Middlename is null)) 
+						or (UCase(cl.Email) = UCase('${sEmail}') and '${sEmail}' != '') 
+						or (cl.IIN = '${sIIN}' and '${sIIN}' != '')`;
+		//res.send(sqlClient);
+		//return;
+		let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
+			//проверим наличие клиента
+			if (errClient) { throw errClient; }
+			//res.send(rowsClient);
+			//return;
+			if (rowsClient.length == 0) {
+				//если клиента нет, то заведем его
+				var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
+values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
+				//res.send(insNewClient);
+				//return;
+				let qryNewClient = db.query(insNewClient, function(errNewClient, resultNewClient, fieldsNewClient) {
+					if (errNewClient) { throw errNewClient; }
+					var nNewClientID = resultNewClient.insertId;
+					//если успешно завели клиента, то надо звести структуру, но для начала проверим наличие спонсора
+					//res.send("Клиент заведен, вот его идентификатор: "+nNewClientID);
+					//return;
+					var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
+					let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
+						//проверим существует ли спонсор (клиент) с указанным идентификатором
+						if (errParent) { throw errParent; }
+						if ((rowsParent.length == 0) || (rowsParent[0].ParentCount == 0)) {
+							res.send("<p>Неправильный идентификатор спонсора "+nIDParent+"</p><p><a href='/'>Вернуться на сайт</a></p>");
+							return;
+						}
+						else {
+							//если такой спонсор есть в базе, создаем структуру по указанному виду входа
+							var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
+												values (${nIDPlanType}, ${nIDParent}, ${nNewClientID}, now(), 0)`;
+							//res.send(insNewClStr);
+							//return;
+							let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
+								if (errNewClStr) { throw errNewClStr; }
+								//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
+								var nNewClStrID = resultNewClStr.insertId;
+								/*res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.ID="+nNewClStrID);
+								return;*/
+								sessData.userID = nNewClientID;
+								sessData.userPWD = "1234567";
+								res.redirect("/cab?pt="+nIDPlanType);
+							});
+						}
+					});
+				});
+			}
+			else {
+				//если такой клиент уже есть, то проверим наличие у него указанной структуры, но для начала проверим наличие спонсора
+				/*res.send("<p>Такой клиент уже заведен:</p>"
+						 +"<ul>"
+						 +"<li>ID: "+rowsClient[0].ID+"</li>"
+						 +"<li>Фамилия: "+rowsClient[0].Lastname+"</li>"
+						 +"<li>Имя: "+rowsClient[0].Firstname+"</li>"
+						 +"<li>Отчество: "+rowsClient[0].Middlename+"</li>"
+						 +"<li>ИИН: "+rowsClient[0].IIN+"</li>"
+						 +"<li>email: "+rowsClient[0].Email+"</li>"
+						 +"</ul>"
+						 +"<p><a href='/'>Вернуться на сайт</a></p>"
+						);
+				return;*/
+				var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
+				let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
+					//проверим существует ли спонсор (клиент) с указанным идентификатором
+					if (errParent) { throw errParent; }
+					if ((rowsParent.length == 0) || (rowsParent[0].ParentCount == 0)) {
+						res.send("<p>Неправильный идентификатор спонсора "+nIDParent+"</p><p><a href='/'>Вернуться на сайт</a></p>");
+						return;
+					}
+					else {
+						//если такой спонсор есть в базе, проверим наличие структуры по указанному виду входа
+						var sqlClStr = `select count(*) as countClStr from Struct str where str.IDPlanType = ${nIDPlanType} and str.IDParent = ${nIDParent} and str.IDClient = ${nClientID}`;
+						let qryClStr = db.query(sqlClStr, function(errClStr, resultClStr, fieldsClStr) {
+							if (errClStr) { throw errClStr; }
+							if ((resultClStr.length > 0) || (resultClStr.countClStr > 0)) {
+								res.send("Такой клиент с таким спонсором уже заведен в указанном виде входа");
+								return;
+							}
+							else {
+								var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
+values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
+								//res.send(insNewClStr);
+								//return;
+								let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
+									if (errNewClStr) { throw errNewClStr; }
+									//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
+									var nNewClStrID = resultNewClStr.insertId;
+									res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
+									return;
+								});
+							}
+						});
+					}
+				});
+			}
+		});
+		
 		/*
 		var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
 		let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
@@ -896,7 +1000,7 @@ app.post('/cab', function(req, res, next) {
 			else {
 				var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive
 								FROM Client cl 
-								WHERE (cl.Lastname = '${sLastname}' AND cl.Firstname = '${sFirstname}' AND (cl.Middlename IN ('${sMiddlename}', '') or cl.Middlename is null))
+								WHERE (UCase(cl.Lastname) = UCase('${sLastname}') AND cl.Firstname = UCase('${sFirstname}') AND (cl.Middlename IN (UCase('${sMiddlename}'), '') or cl.Middlename is null))
 								or (cl.Email = '${sEmail}') 
 								or (cl.IIN = '${sIIN}')`;
 				let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
@@ -921,11 +1025,11 @@ app.post('/cab', function(req, res, next) {
 		*/
 		
 		
-		res.send("Онлайн-регистрация пока не доступна.<br><a href='/'>Вернуться на сайт</a><br />");
-		return;
+		//res.send("Онлайн-регистрация пока не доступна.<br><a href='/'>Вернуться на сайт</a><br />");
+		//return;
 		//if(sPwd == ""){sPwd = "1234567";}
 	}
-	
+	else {
 	if (nPlanTypeID != 1 && nPlanTypeID != 2 && nPlanTypeID != 3 && nPlanTypeID != 4) {
 		nPlanTypeID = 1;
 		nPlanTypeID0 = 0;
@@ -1088,6 +1192,7 @@ app.post('/cab', function(req, res, next) {
 			});
 		});
 	});
+	}
 });
 
 
@@ -1942,6 +2047,9 @@ app.post('/admsaveclient/:idclient', function(req, res, next){
 		var nClCountryCitz = postValues.nClCountryCitz;
 		var sClIIN = postValues.txClIIN;
 		var sClPasspNum = postValues.txClPasspNum;
+		var nClStrPlanType = postValues.nClStrPlanType;
+		var nClStrParent = postValues.nClStrParent;
+		var sClStrRegdate = postValues.txClStrRegdate;
 		
 		if (!sClMiddlename) { sClMiddlename = ""; }
 		if (!sClEmail) { sClEmail = ""; }
@@ -1949,6 +2057,8 @@ app.post('/admsaveclient/:idclient', function(req, res, next){
 		if (!sClPasspNum) { sClPasspNum = ""; }
 		if (!nClGender || nClGender == "") { nClGender = 0; }
 		if (!nClCountryCitz || nClCountryCitz == "") { nClCountryCitz = 1; }
+		if (!nClStrPlanType || nClStrPlanType == "") { nClStrPlanType = 1; }
+		if (!nClStrParent || nClStrParent == "") { nClStrParent = 1000000000; }
 		
 		sqlUpd = `update Client cl 
 				set cl.Lastname='`+sClLastname+`', 
@@ -1966,6 +2076,18 @@ app.post('/admsaveclient/:idclient', function(req, res, next){
 		
 		let qryClUpd = db.query(sqlUpd, function(err, result) {
 			if(err) throw err;
+			/*sessData.IsNewClient = false;
+			sessData.NewClientFIO = "";
+			var sqlUpdStr = `update Struct s
+							set s.IDPlanType=${nClStrPlanType},
+								s.IDClient=${nClientID},
+								s.IDClParent=${nClStrParent},
+								s.RegDate=DATE_FORMAT('${sClStrRegdate}', '%Y-%m-%d')
+							where `;
+			let qryClUpdStr = db.query(sqlUpdStr, function(errStr, resultStr) {
+				if (errStr) { throw errStr; }
+				res.redirect('/admclient?cid='+nClientID);
+			});*/
 			res.redirect('/admclient?cid='+nClientID);
 		});
     });

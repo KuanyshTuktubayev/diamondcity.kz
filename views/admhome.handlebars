@@ -86,7 +86,42 @@
 									<div class="form-group">
 										<input type="text" class="form-control" id="passpnum{{this.ID}}" name="txClPasspNum" value="{{this.PasspNum}}" />
 									</div>
+									
+									<div class="form-group">
+										<label for="cl_plantype_{{this.ID}}">Вид входа</label>
+										<div class="form-group">
+											<select id="cl_plantype_{{this.ID}}" name="nClStrPlanType">
+												{{#if plantypeList}}
+													{{#each plantypeList}}
+														<option value="{{this.IDPlanType}}" {{#iff this.IDPlanType '==' 1}} selected {{/iff}}>{{this.PlanTypeName}}</option> 
+													{{/each}}
+												{{else}}
+													<option value="1" selected>20'000-Start</option>
+													<option value="2">50'000-Сапфир</option>
+													<option value="4">200'000-VIP</option>
+												{{/if}}
+											</select>
+										</div>
 
+										<label for="cl_parent_{{this.ID}}">Спонсор</label>
+										<div class="form-group">
+											<select id="cl_parent_{{this.ID}}" name="nClStrParent">
+												{{#if parentClList}}
+													{{#each parentClList}}
+														<option value="{{this.IDClientP}}" {{#iff this.IDClientP '==' 1}} selected {{/iff}}>{{this.ParentFIO}}</option> 
+													{{/each}}
+												{{else}}
+													<option value="1000000000" selected>1000000000 Молдашева Зауре</option> 
+												{{/if}}
+											</select>
+										</div>
+
+										<label for="cl_clstrregdate_{{this.ID}}">Дата регистрации в структуре</label>
+										<div class="form-group">
+											<input type="date" class="form-control" id="cl_clstrregdate_{{this.ID}}" name="txClStrRegdate" value="{{this.StrRegDate}}" />
+										</div>
+									</div>
+									
 									<!--<button class="btn btn-primary" id="btnSaveCl{{this.ID}}" name="btnSaveOldClient">Сохранить</button>-->
 									<button class="btn btn-primary" id="btnSaveCl{{this.ID}}" name="btnSaveOldClient" formaction="/admsaveclient/{{this.ID}}">Сохранить</button>
 								</form>
