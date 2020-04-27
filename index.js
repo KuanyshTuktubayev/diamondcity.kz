@@ -877,110 +877,156 @@ app.post('/cab', function(req, res, next) {
 		var sPwd = req.body.pwd;
 		
 		/*
+		1) сначала проверим наличие спонсора,
+		1-1) если его нет, то дальнейшие шаги бессмысленны и поэтому останавливаем процесс регистрации (выкидываем ошибку)
+		1-2) если спонсор есть, то надо проверить наличие у него структуры под указанным видом входа
+		1-2-1) если у спонсора нет структуры под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку)
+		1-2-2) если у спонсора есть структуры под указанным видом входа, значит пора проверить наличие нового клиента (а вдруг он уже существует и хочет зарегиться в структуре указанного вида входа?)
+		1-2-2-1) если клиент существует, то переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
+		1-2-2-2) если клиента нет, то заводим его с активным статусом, затем переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
+		2) мы знаем, что:
+		- спонсор есть,
+		- у спонсора есть структура под указанным видом входа,
+		- клиент тоже есть (завели или уже существует - пометили для себя),
+		теперь проверим есть ли у клиента структура под указанным видом входа
+		2-1) если клиент старый и у него есть структура под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку
+		2-2) если клиент новый или если клиент старый и у него нет структуры под указанным видом входа, то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+		
 		надо проверить IDParent
 		если IDParent отсутствует в базе, то ругаемся
-		если IDParent есть, то проверим существование регистрируемого клиента
-		может быть регистрируемый клиент уже есть, надо проверить по ФИО, емайл, ИИН
+		если IDParent есть, то проверим существование регистрируемого клиента, надо проверить по ФИО, емайл, ИИН
 		если клиент уже есть, то не заводим его, а смотрим какой "вид входа" он указал при регистрации
 		если клиента нет, то заводим его в базе с неактивным статусом, затем смотрим какой "вид входа" он указал при регистрации
 		регистрируемый клиент должен указать "вид входа", и нам надо проверить, есть он уже в такой структуре
 		если клиент уже есть в структуре по указанному виду входа, то надо ругаться
 		если клиента нет в структуре по указанному виду входа, то надо завести его с неактивным статусом (в рамках структуры), затем перейти в личный кабинет нового клиента
 		*/
-		var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive 
-						FROM Client cl 
-						WHERE (UCase(cl.Lastname) = UCase('${sLastname}') AND UCase(cl.Firstname) = UCase('${sFirstname}') AND (UCase(cl.Middlename) IN (UCase('${sMiddlename}'), '') or cl.Middlename is null)) 
-						or (UCase(cl.Email) = UCase('${sEmail}') and '${sEmail}' != '') 
-						or (cl.IIN = '${sIIN}' and '${sIIN}' != '')`;
-		//res.send(sqlClient);
-		//return;
-		let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
-			//проверим наличие клиента
-			if (errClient) { throw errClient; }
-			//res.send(rowsClient);
-			//return;
-			if (rowsClient.length == 0) {
-				//если клиента нет, то заведем его
-				var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
-values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
-				//res.send(insNewClient);
-				//return;
-				let qryNewClient = db.query(insNewClient, function(errNewClient, resultNewClient, fieldsNewClient) {
-					if (errNewClient) { throw errNewClient; }
-					var nNewClientID = resultNewClient.insertId;
-					//если успешно завели клиента, то надо звести структуру, но для начала проверим наличие спонсора
-					//res.send("Клиент заведен, вот его идентификатор: "+nNewClientID);
-					//return;
-					var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
-					let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
-						//проверим существует ли спонсор (клиент) с указанным идентификатором
-						if (errParent) { throw errParent; }
-						if ((rowsParent.length == 0) || (rowsParent[0].ParentCount == 0)) {
-							res.send("<p>Неправильный идентификатор спонсора "+nIDParent+"</p><p><a href='/'>Вернуться на сайт</a></p>");
-							return;
-						}
-						else {
-							//если такой спонсор есть в базе, создаем структуру по указанному виду входа
-							var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
-												values (${nIDPlanType}, ${nIDParent}, ${nNewClientID}, now(), 0)`;
-							//res.send(insNewClStr);
-							//return;
-							let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
-								if (errNewClStr) { throw errNewClStr; }
-								//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
-								var nNewClStrID = resultNewClStr.insertId;
-								/*res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.ID="+nNewClStrID);
-								return;*/
-								sessData.userID = nNewClientID;
-								sessData.userPWD = "1234567";
-								res.redirect("/cab?pt="+nIDPlanType);
-							});
-						}
-					});
-				});
+		
+		//1) сначала проверим наличие спонсора,
+		var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
+		let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
+			if (errParent) { throw errParent; }
+			if ((rowsParent.length == 0) || (rowsParent[0].ParentCount == 0)) {
+				//1-1) если спонсора нет, то дальнейшие шаги бессмысленны и поэтому останавливаем процесс регистрации (выкидываем ошибку)
+				res.send("<p>Неправильный идентификатор спонсора "+nIDParent+"</p><p><a href='/'>Вернуться на сайт</a></p>");
+				return;
 			}
 			else {
-				//если такой клиент уже есть, то проверим наличие у него указанной структуры, но для начала проверим наличие спонсора
-				/*res.send("<p>Такой клиент уже заведен:</p>"
-						 +"<ul>"
-						 +"<li>ID: "+rowsClient[0].ID+"</li>"
-						 +"<li>Фамилия: "+rowsClient[0].Lastname+"</li>"
-						 +"<li>Имя: "+rowsClient[0].Firstname+"</li>"
-						 +"<li>Отчество: "+rowsClient[0].Middlename+"</li>"
-						 +"<li>ИИН: "+rowsClient[0].IIN+"</li>"
-						 +"<li>email: "+rowsClient[0].Email+"</li>"
-						 +"</ul>"
-						 +"<p><a href='/'>Вернуться на сайт</a></p>"
-						);
-				return;*/
-				var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
-				let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
-					//проверим существует ли спонсор (клиент) с указанным идентификатором
-					if (errParent) { throw errParent; }
-					if ((rowsParent.length == 0) || (rowsParent[0].ParentCount == 0)) {
-						res.send("<p>Неправильный идентификатор спонсора "+nIDParent+"</p><p><a href='/'>Вернуться на сайт</a></p>");
+				//1-2) если спонсор есть, то надо проверить наличие у него структуры под указанным видом входа
+				var sqlParentStr = `select count(*) as ParentStrCount
+									from Struct s
+									where 1=1
+									and s.IDClient = ${nIDParent}
+									and s.IDPlanType = ${nIDPlanType}`;
+				//res.send(sqlParentStr);
+				//return;
+				let qryParentStr = db.query(sqlParentStr, function(errParentStr, rowsParentStr, fieldsParentStr) {
+					if (errParentStr) { throw errParentStr; }
+					//1-2-1) если у спонсора нет структуры под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку)
+					if ((rowsParentStr.length == 0) || (rowsParentStr[0].ParentStrCount == 0)) {
+						res.send("<p>У спонсора "+nIDParent+" нет структуры под указанным видом входа</p><p><a href='/'>Вернуться на сайт</a></p>");
 						return;
 					}
 					else {
-						//если такой спонсор есть в базе, проверим наличие структуры по указанному виду входа
-						var sqlClStr = `select count(*) as countClStr from Struct str where str.IDPlanType = ${nIDPlanType} and str.IDParent = ${nIDParent} and str.IDClient = ${nClientID}`;
-						let qryClStr = db.query(sqlClStr, function(errClStr, resultClStr, fieldsClStr) {
-							if (errClStr) { throw errClStr; }
-							if ((resultClStr.length > 0) || (resultClStr.countClStr > 0)) {
-								res.send("Такой клиент с таким спонсором уже заведен в указанном виде входа");
-								return;
+						//1-2-2) если у спонсора есть структуры под указанным видом входа, значит пора проверить наличие нового клиента (а вдруг он уже существует и хочет зарегиться в структуре указанного вида входа?)
+						var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive, u.Email, u.Pwd 
+										FROM Client cl 
+										JOIN Users u on u.ID = cl.ID
+										WHERE (UCase(cl.Lastname) = UCase('${sLastname}') 
+												AND UCase(cl.Firstname) = UCase('${sFirstname}') 
+												AND (UCase(cl.Middlename) IN (UCase('${sMiddlename}'), '') or cl.Middlename is null)) 
+										or (UCase(cl.Email) = UCase('${sEmail}') and '${sEmail}' != '') 
+										or (cl.IIN = '${sIIN}' and '${sIIN}' != '')`;
+						//res.send(sqlClient);
+						//return;
+						let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
+							//проверим наличие клиента
+							if (errClient) { throw errClient; }
+							//res.send(rowsClient);
+							//return;
+							if (rowsClient.length == 0) {
+								//1-2-2-1) если клиент существует, то переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
+								var nClientID = rowsClient[0].ID;
+								var sPwd = rowsClient[0].Pwd; //пароль хранится в базе в зашифрованном виде
+								
+								//2) мы знаем, что:
+								// - спонсор есть,
+								// - у спонсора есть структура под указанным видом входа,
+								// - клиент тоже есть (уже существует),
+								//теперь проверим есть ли у клиента структура под указанным видом входа
+								
+								var sqlClStr = `select count(*) as countClStr 
+												from Struct str 
+												where 1=1 
+												and str.IDPlanType = ${nIDPlanType} 
+												and str.IDParent = ${nIDParent} 
+												and str.IDClient = ${nClientID}`;
+								let qryClStr = db.query(sqlClStr, function(errClStr, resultClStr, fieldsClStr) {
+									if (errClStr) { throw errClStr; }
+									if ((resultClStr.length > 0) || (resultClStr[0].countClStr > 0)) {
+										//2-1) если клиент старый и у него есть структура под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку
+										res.send("Такой клиент с таким спонсором уже заведен в указанном виде входа. Вот ID клиента: "+nClientID);
+										return;
+									}
+									else {
+										//2-2) если клиент новый или если клиент старый и у него нет структуры под указанным видом входа, то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+										var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
+															values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
+										//res.send(insNewClStr);
+										//return;
+										let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
+											if (errNewClStr) { throw errNewClStr; }
+											//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
+											var nNewClStrID = resultNewClStr.insertId;
+											res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
+											return;
+											/*мы не можем перейти в кабинет, потому что в сессию не сможем сохранить пароль
+											sessData.userID = nClientID;
+											sessData.userPWD = sPwd; //пароль зашифрованный
+											res.redirect("/cab?pt="+nIDPlanType);*/
+										});
+									}
+								});
 							}
 							else {
-								var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
-values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
-								//res.send(insNewClStr);
+								//1-2-2-2) если клиента нет, то заводим его с активным статусом, затем переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
+								var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
+													values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
+								//res.send(insNewClient);
 								//return;
-								let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
-									if (errNewClStr) { throw errNewClStr; }
-									//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
-									var nNewClStrID = resultNewClStr.insertId;
-									res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
-									return;
+								let qryNewClient = db.query(insNewClient, function(errNewClient, resultNewClient, fieldsNewClient) {
+									if (errNewClient) { throw errNewClient; }
+									var nNewClientID = resultNewClient.insertId;
+									//res.send("Клиент заведен, вот его идентификатор: "+nNewClientID);
+									//return;
+									
+									//2) мы знаем, что:
+									// - спонсор есть,
+									// - у спонсора есть структура под указанным видом входа,
+									// - клиент тоже есть (завели),
+									//теперь проверим есть ли у клиента структура под указанным видом входа
+									//2-1) если клиент старый и у него есть структура под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку
+									//2-2) если клиент новый или если клиент старый и у него нет структуры под указанным видом входа, то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+
+									//нет! если мы только что завели нового клиента, то у него никак не может существовать никакой структуры под любым видом входа
+									//поэтому сразу заводим клиента в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+										
+									//2-2) если клиент новый (...), то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+									var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
+														values (${nIDPlanType}, ${nIDParent}, ${nNewClientID}, now(), 0)`;
+									//res.send(insNewClStr);
+									//return;
+									let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
+										if (errNewClStr) { throw errNewClStr; }
+										//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
+										var nNewClStrID = resultNewClStr.insertId;
+										res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
+										return;
+										/*мы не можем перейти в кабинет, потому что в сессию не сможем сохранить пароль
+										sessData.userID = nNewClientID;
+										sessData.userPWD = sPwd; //пароль зашифрованный
+										res.redirect("/cab?pt="+nIDPlanType);*/
+									});
 								});
 							}
 						});
@@ -989,209 +1035,173 @@ values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
 			}
 		});
 		
-		/*
-		var sqlParent = `select count(*) as ParentCount from Client cp where cp.ID = ${nIDParent}`;
-		let qryParent = db.query(sqlParent, function(errParent, rowsParent, fieldsParent) {
-			if (errParent) { throw errParent; }
-			if (rowsParent.length == 0) {
-				res.send("<p>Неправильный идентификатор клиента ${nIDParent}</p><p><a href='/'>Вернуться на сайт</a></p>");
-				return;
-			}
-			else {
-				var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive
-								FROM Client cl 
-								WHERE (UCase(cl.Lastname) = UCase('${sLastname}') AND cl.Firstname = UCase('${sFirstname}') AND (cl.Middlename IN (UCase('${sMiddlename}'), '') or cl.Middlename is null))
-								or (cl.Email = '${sEmail}') 
-								or (cl.IIN = '${sIIN}')`;
-				let qryClient = db.query(sqlClient, function(errClient, rowsClient, fieldsClient) {
-					if (errClient) { throw errClient; }
-					if (rowsClient.length == 0) {
-						var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
-											values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
-						let qryNewClient = db.query(insNewClient, function(errNewClient, resultNewClient, fieldsNewClient) {
-							if (errNewClient) { throw errNewClient; }
-							
-						});
-					}
-					else {
-						
-					}
-				});
-
-				var sqlInsertClient = `insert into Client(Lastname, Firstname, Middlename, Email)
-									values('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}')`;
-			}
-		});
-		*/
-		
-		
 		//res.send("Онлайн-регистрация пока не доступна.<br><a href='/'>Вернуться на сайт</a><br />");
 		//return;
 		//if(sPwd == ""){sPwd = "1234567";}
 	}
 	else {
-	if (nPlanTypeID != 1 && nPlanTypeID != 2 && nPlanTypeID != 3 && nPlanTypeID != 4) {
-		nPlanTypeID = 1;
-		nPlanTypeID0 = 0;
-	}
-	else {
-		nPlanTypeID0 = nPlanTypeID;
-	}
-	var sql = "";
-	/*sql = "select cl.*, DATE_FORMAT(cl.Birthdate, '%Y-%m-%d') clBirthdate, cn.Shortname CountryCitz, GetCountChildsForBonus(cl.ID, " + nPlanTypeID + ") AS CountChilds, ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 0),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 1),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 2),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 3),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 4),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 5),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 6),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 7),0) AS CountStr, ifnull(GetCurrentClientTitle(cl.ID, " + nPlanTypeID + "),'Клиент') ClientTitle from Client cl join Users u on u.ID = cl.ID and (u.pwd = password('" + sPwd + "') or u.pwd = '" + sPwd + "') left join Country cn on cn.ID = cl.IDCountryCitz where cl.ID = " + nClientID;*/
-	sql = "select cl.*, DATE_FORMAT(cl.Birthdate, '%Y-%m-%d') clBirthdate, cn.Shortname CountryCitz, GetCountChForBonus2(cl.ID, " + nPlanTypeID + ") AS CountChilds, ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 0),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 1),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 2),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 3),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 4),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 5),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 6),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 7),0) AS CountStr, ifnull(GetCurrentClientTitle(cl.ID, " + nPlanTypeID + "),'Клиент') ClientTitle from Client cl join Users u on u.ID = cl.ID and (u.pwd = password('" + sPwd + "') or u.pwd = '" + sPwd + "') left join Country cn on cn.ID = cl.IDCountryCitz where cl.ID = " + nClientID;
-	let querySelf = db.query(sql, function(err, result, fields){
-    	if(err) {throw err;}
-		if (result.length == 0) {
-			res.send("No client selected! Возможно вы ввели неправильный идентификатор клиента или неправильно ввели пароль.<br><a href='/'>Вернуться на сайт</a>");
-			return;
+		if (nPlanTypeID != 1 && nPlanTypeID != 2 && nPlanTypeID != 3 && nPlanTypeID != 4) {
+			nPlanTypeID = 1;
+			nPlanTypeID0 = 0;
 		}
-		
-		//var sessData = req.session;
-  		sessData.userID = nClientID;
-		sessData.userPWD = sPwd;
-		
-		var sqlStr = ""
-			+"SELECT t0.IDPlanType, t0.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, t0.IDClient, cl.Lastname, cl.Firstname, 0 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"join Client cl on cl.ID = t0.IDClient "
-			+"join Client clp on clp.ID = t0.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t1.IDPlanType, t1.IDClParent, clp.Lastname, clp.Firstname, t1.IDClient, cl.Lastname, cl.Firstname, 1 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t1.IDClient "
-			+"join Client clp on clp.ID = t1.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t2.IDPlanType, t2.IDClParent, clp.Lastname, clp.Firstname, t2.IDClient, cl.Lastname, cl.Firstname, 2 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t2.IDClient "
-			+"join Client clp on clp.ID = t2.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t3.IDPlanType, t3.IDClParent, clp.Lastname, clp.Firstname, t3.IDClient, cl.Lastname, cl.Firstname, 3 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t3.IDClient "
-			+"join Client clp on clp.ID = t3.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t4.IDPlanType, t4.IDClParent, clp.Lastname, clp.Firstname, t4.IDClient, cl.Lastname, cl.Firstname, 4 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t4.IDClient "
-			+"join Client clp on clp.ID = t4.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t5.IDPlanType, t5.IDClParent, clp.Lastname, clp.Firstname, t5.IDClient, cl.Lastname, cl.Firstname, 5 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t5.IDClient "
-			+"join Client clp on clp.ID = t5.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t6.IDPlanType, t6.IDClParent, clp.Lastname, clp.Firstname, t6.IDClient, cl.Lastname, cl.Firstname, 6 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t6 ON t6.IDClParent = t5.IDClient and t6.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t6.IDClient "
-			+"join Client clp on clp.ID = t6.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
-			+"UNION ALL "
-			+"SELECT t7.IDPlanType, t7.IDClParent, clp.Lastname, clp.Firstname, t7.IDClient, cl.Lastname, cl.Firstname, 7 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
-			+"FROM Struct t0 "
-			+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t6 ON t6.IDClParent = t5.IDClient and t6.IDPlanType = t0.IDPlanType "
-			+"JOIN Struct t7 ON t7.IDClParent = t6.IDClient and t7.IDPlanType = t0.IDPlanType "
-			+"join Client cl on cl.ID = t7.IDClient "
-			+"join Client clp on clp.ID = t7.IDClParent "
-			+"join PlanType pt on pt.ID = t0.IDPlanType "
-			+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + "";
-		var sqlStr = ``
-			+`SELECT t0.IDPlanType, t0.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, t0.IDClient, cl.Lastname, cl.Firstname, 0 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName 
-			FROM Struct t0 
-			join Client cl on cl.ID = t0.IDClient 
-			left join Client clp on clp.ID = t0.IDClParent 
-			join PlanType pt on pt.ID = t0.IDPlanType
-			WHERE t0.IDClient = `+nClientID+` and t0.IDPlanType = `+nPlanTypeID+`
-			UNION ALL 
-			SELECT ou.IDPlanType, ou.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, ou.IDClient, cl.Lastname, cl.Firstname, ou.level lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName 
-			FROM ( 
-			SELECT hi.IDPlanType, hi.IDClParent, hi.IDClient, ho.level FROM ( 
-			SELECT hierarchy_connect_by_parent_eq_prior_id(s.IDClient, s.IDPlanType) AS id, s.IDPlanType, 
-			@level AS level 
-			FROM ( 
-			SELECT @start_with := `+nClientID+`, @id := @start_with, @level := 0 
-			) vars, Struct s 
-			WHERE @id IS NOT NULL and s.IDPlanType = `+nPlanTypeID+`
-			) ho 
-			JOIN Struct hi ON hi.IDClient = ho.id and hi.IDPlanType = ho.IDPlanType 
-			where ho.level <= 7 
-			) ou 
-			join Client cl on cl.ID = ou.IDClient 
-			join Client clp on clp.ID = ou.IDClParent
-			join PlanType pt on pt.ID = ou.IDPlanType`;
-		let queryStr = db.query(sqlStr, function(errStr, structRows){
-			if(errStr) {throw errStr;}
-			var userID = sessData.userID;
-			var userPWD = sessData.userPWD;
-			var nPlanTypeID1 = 1;
-			var nPlanTypeID2 = 0;
-			var nPlanTypeID4 = 0;
-			if (nPlanTypeID == 1) {
-				nPlanTypeID1 = 1;
-				nPlanTypeID2 = 0;
-				nPlanTypeID4 = 0;
+		else {
+			nPlanTypeID0 = nPlanTypeID;
+		}
+		var sql = "";
+		/*sql = "select cl.*, DATE_FORMAT(cl.Birthdate, '%Y-%m-%d') clBirthdate, cn.Shortname CountryCitz, GetCountChildsForBonus(cl.ID, " + nPlanTypeID + ") AS CountChilds, ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 0),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 1),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 2),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 3),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 4),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 5),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 6),0)+ifnull(GetCountChilds(cl.ID, " + nPlanTypeID + ", 7),0) AS CountStr, ifnull(GetCurrentClientTitle(cl.ID, " + nPlanTypeID + "),'Клиент') ClientTitle from Client cl join Users u on u.ID = cl.ID and (u.pwd = password('" + sPwd + "') or u.pwd = '" + sPwd + "') left join Country cn on cn.ID = cl.IDCountryCitz where cl.ID = " + nClientID;*/
+		sql = "select cl.*, DATE_FORMAT(cl.Birthdate, '%Y-%m-%d') clBirthdate, cn.Shortname CountryCitz, GetCountChForBonus2(cl.ID, " + nPlanTypeID + ") AS CountChilds, ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 0),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 1),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 2),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 3),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 4),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 5),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 6),0)+ifnull(GetCountChilds2(cl.ID, " + nPlanTypeID + ", 7),0) AS CountStr, ifnull(GetCurrentClientTitle(cl.ID, " + nPlanTypeID + "),'Клиент') ClientTitle from Client cl join Users u on u.ID = cl.ID and (u.pwd = password('" + sPwd + "') or u.pwd = '" + sPwd + "') left join Country cn on cn.ID = cl.IDCountryCitz where cl.ID = " + nClientID;
+		let querySelf = db.query(sql, function(err, result, fields){
+			if(err) {throw err;}
+			if (result.length == 0) {
+				res.send("No client selected! Возможно вы ввели неправильный идентификатор клиента или неправильно ввели пароль.<br><a href='/'>Вернуться на сайт</a>");
+				return;
 			}
-			if (nPlanTypeID == 2) {
-				nPlanTypeID1 = 0;
-				nPlanTypeID2 = 2;
-				nPlanTypeID4 = 0;
-			}
-			if (nPlanTypeID == 4) {
-				nPlanTypeID1 = 0;
-				nPlanTypeID2 = 0;
-				nPlanTypeID4 = 4;
-			}
-			var sqlBonuses = "select b.ID, b.IDClient, b.IDPLanType, DATE_FORMAT(b.BonusDate, '%Y-%m-%d') BonusDate, b.IsPayed, b.Amount, b.ChildCount, b.RankTitle from Bonuses b where b.IDClient = " + nClientID + " and b.IDPlanType = " + nPlanTypeID + "";
-			let queryBonuses = db.query(sqlBonuses, function(errBonuses, bonusesRows){
-				if(errBonuses) {throw errBonuses;}
-				var sqlSalary = "select s.ID, s.IDClient, s.IDPlanType, DATE_FORMAT(s.PeriodFrom, '%d.%m.%Y') PeriodFrom, DATE_FORMAT(s.PeriodTo, '%d.%m.%Y') PeriodTo, DATE_FORMAT(s.CalcDate, '%Y-%m-%d') CalcDate, DATE_FORMAT(s.PayDate, '%Y-%m-%d') PayDate, s.IsPayed, s.Amount from Salary s where s.IDClient = " + nClientID + " and s.IDPlanType = " + nPlanTypeID + " order by s.ID";
-				let querySalary = db.query(sqlSalary, function(errSalary, salaryRows){
-					if(errSalary) {throw errSalary;}
-					res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, structItems: structRows, bonusItems: bonusesRows, salaryItems: salaryRows, planTypeID0: nPlanTypeID0, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4});
+			
+			//var sessData = req.session;
+			sessData.userID = nClientID;
+			sessData.userPWD = sPwd;
+			
+			var sqlStr = ""
+				+"SELECT t0.IDPlanType, t0.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, t0.IDClient, cl.Lastname, cl.Firstname, 0 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"join Client cl on cl.ID = t0.IDClient "
+				+"join Client clp on clp.ID = t0.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t1.IDPlanType, t1.IDClParent, clp.Lastname, clp.Firstname, t1.IDClient, cl.Lastname, cl.Firstname, 1 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t1.IDClient "
+				+"join Client clp on clp.ID = t1.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t2.IDPlanType, t2.IDClParent, clp.Lastname, clp.Firstname, t2.IDClient, cl.Lastname, cl.Firstname, 2 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t2.IDClient "
+				+"join Client clp on clp.ID = t2.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t3.IDPlanType, t3.IDClParent, clp.Lastname, clp.Firstname, t3.IDClient, cl.Lastname, cl.Firstname, 3 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t3.IDClient "
+				+"join Client clp on clp.ID = t3.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t4.IDPlanType, t4.IDClParent, clp.Lastname, clp.Firstname, t4.IDClient, cl.Lastname, cl.Firstname, 4 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t4.IDClient "
+				+"join Client clp on clp.ID = t4.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t5.IDPlanType, t5.IDClParent, clp.Lastname, clp.Firstname, t5.IDClient, cl.Lastname, cl.Firstname, 5 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t5.IDClient "
+				+"join Client clp on clp.ID = t5.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t6.IDPlanType, t6.IDClParent, clp.Lastname, clp.Firstname, t6.IDClient, cl.Lastname, cl.Firstname, 6 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t6 ON t6.IDClParent = t5.IDClient and t6.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t6.IDClient "
+				+"join Client clp on clp.ID = t6.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + " "
+				+"UNION ALL "
+				+"SELECT t7.IDPlanType, t7.IDClParent, clp.Lastname, clp.Firstname, t7.IDClient, cl.Lastname, cl.Firstname, 7 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName "
+				+"FROM Struct t0 "
+				+"JOIN Struct t1 ON t1.IDClParent = t0.IDClient and t1.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t2 ON t2.IDClParent = t1.IDClient and t2.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t3 ON t3.IDClParent = t2.IDClient and t3.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t4 ON t4.IDClParent = t3.IDClient and t4.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t5 ON t5.IDClParent = t4.IDClient and t5.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t6 ON t6.IDClParent = t5.IDClient and t6.IDPlanType = t0.IDPlanType "
+				+"JOIN Struct t7 ON t7.IDClParent = t6.IDClient and t7.IDPlanType = t0.IDPlanType "
+				+"join Client cl on cl.ID = t7.IDClient "
+				+"join Client clp on clp.ID = t7.IDClParent "
+				+"join PlanType pt on pt.ID = t0.IDPlanType "
+				+"WHERE t0.IDClient = " + nClientID + " and t0.IDPlanType = " + nPlanTypeID + "";
+			var sqlStr = ``
+				+`SELECT t0.IDPlanType, t0.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, t0.IDClient, cl.Lastname, cl.Firstname, 0 lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName 
+				FROM Struct t0 
+				join Client cl on cl.ID = t0.IDClient 
+				left join Client clp on clp.ID = t0.IDClParent 
+				join PlanType pt on pt.ID = t0.IDPlanType
+				WHERE t0.IDClient = `+nClientID+` and t0.IDPlanType = `+nPlanTypeID+`
+				UNION ALL 
+				SELECT ou.IDPlanType, ou.IDClParent, clp.Lastname LastnameP, clp.Firstname FirstnameP, ou.IDClient, cl.Lastname, cl.Firstname, ou.level lev, concat(pt.Name,'-',pt.AmountEnter) as PlanTypeName 
+				FROM ( 
+				SELECT hi.IDPlanType, hi.IDClParent, hi.IDClient, ho.level FROM ( 
+				SELECT hierarchy_connect_by_parent_eq_prior_id(s.IDClient, s.IDPlanType) AS id, s.IDPlanType, 
+				@level AS level 
+				FROM ( 
+				SELECT @start_with := `+nClientID+`, @id := @start_with, @level := 0 
+				) vars, Struct s 
+				WHERE @id IS NOT NULL and s.IDPlanType = `+nPlanTypeID+`
+				) ho 
+				JOIN Struct hi ON hi.IDClient = ho.id and hi.IDPlanType = ho.IDPlanType 
+				where ho.level <= 7 
+				) ou 
+				join Client cl on cl.ID = ou.IDClient 
+				join Client clp on clp.ID = ou.IDClParent
+				join PlanType pt on pt.ID = ou.IDPlanType`;
+			let queryStr = db.query(sqlStr, function(errStr, structRows){
+				if(errStr) {throw errStr;}
+				var userID = sessData.userID;
+				var userPWD = sessData.userPWD;
+				var nPlanTypeID1 = 1;
+				var nPlanTypeID2 = 0;
+				var nPlanTypeID4 = 0;
+				if (nPlanTypeID == 1) {
+					nPlanTypeID1 = 1;
+					nPlanTypeID2 = 0;
+					nPlanTypeID4 = 0;
+				}
+				if (nPlanTypeID == 2) {
+					nPlanTypeID1 = 0;
+					nPlanTypeID2 = 2;
+					nPlanTypeID4 = 0;
+				}
+				if (nPlanTypeID == 4) {
+					nPlanTypeID1 = 0;
+					nPlanTypeID2 = 0;
+					nPlanTypeID4 = 4;
+				}
+				var sqlBonuses = "select b.ID, b.IDClient, b.IDPLanType, DATE_FORMAT(b.BonusDate, '%Y-%m-%d') BonusDate, b.IsPayed, b.Amount, b.ChildCount, b.RankTitle from Bonuses b where b.IDClient = " + nClientID + " and b.IDPlanType = " + nPlanTypeID + "";
+				let queryBonuses = db.query(sqlBonuses, function(errBonuses, bonusesRows){
+					if(errBonuses) {throw errBonuses;}
+					var sqlSalary = "select s.ID, s.IDClient, s.IDPlanType, DATE_FORMAT(s.PeriodFrom, '%d.%m.%Y') PeriodFrom, DATE_FORMAT(s.PeriodTo, '%d.%m.%Y') PeriodTo, DATE_FORMAT(s.CalcDate, '%Y-%m-%d') CalcDate, DATE_FORMAT(s.PayDate, '%Y-%m-%d') PayDate, s.IsPayed, s.Amount from Salary s where s.IDClient = " + nClientID + " and s.IDPlanType = " + nPlanTypeID + " order by s.ID";
+					let querySalary = db.query(sqlSalary, function(errSalary, salaryRows){
+						if(errSalary) {throw errSalary;}
+						res.render('cab', {clientID: userID, clientPWD: userPWD, selfItems: result, structItems: structRows, bonusItems: bonusesRows, salaryItems: salaryRows, planTypeID0: nPlanTypeID0, planTypeID1: nPlanTypeID1, planTypeID2: nPlanTypeID2, planTypeID4: nPlanTypeID4});
+					});
 				});
 			});
 		});
-	});
 	}
 });
 
