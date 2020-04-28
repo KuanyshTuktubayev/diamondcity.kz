@@ -929,7 +929,9 @@ app.post('/cab', function(req, res, next) {
 					}
 					else {
 						//1-2-2) если у спонсора есть структуры под указанным видом входа, значит пора проверить наличие нового клиента (а вдруг он уже существует и хочет зарегиться в структуре указанного вида входа?)
-						var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive, u.Email, u.Pwd, password('${sPwd}') PwdEntered 
+						var sqlClient = `SELECT cl.ID, coalesce(cl.Lastname,'') Lastname, coalesce(cl.Firstname,'') Firstname, coalesce(cl.Middlename,'') Middlename,
+												coalesce(cl.IIN,'') IIN, coalesce(cl.Email,'') Email, cl.IsActive,
+												coalesce(u.Email,'') UserEmail, u.Pwd, password('${sPwd}') PwdEntered 
 										FROM Client cl 
 										JOIN Users u on u.ID = cl.ID
 										WHERE (UCase(cl.Lastname) = UCase('${sLastname}') 
@@ -992,7 +994,7 @@ app.post('/cab', function(req, res, next) {
 								
 								if (rowsClient[0].Pwd != rowsClient[0].PwdEntered) {
 									//если клиент существует, но его пароль неправильно введен, то дальнейшие действия бессмысленны, выкидываем ошибку
-									res.send("Клиент "+nClientID+" "+sClientFIO+" уже существует, но его пароль неправильный введен.");
+									res.send("<p>Клиент "+nClientID+" "+sClientFIO+" уже существует, но его пароль неправильный введен.</p><p><a href='/'>Вернуться на сайт</a></p>");
 									return;
 								}
 								else {
@@ -1027,12 +1029,12 @@ app.post('/cab', function(req, res, next) {
 												if (errNewClStr) { throw errNewClStr; }
 												//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
 												var nNewClStrID = resultNewClStr.insertId;
-												res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
-												return;
+												//res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
+												//return;
 												/*мы не можем перейти в кабинет, потому что в сессию не сможем сохранить пароль
-												sessData.userID = nClientID;
-												sessData.userPWD = sPwd; //пароль зашифрованный
-												res.redirect("/cab?pt="+nIDPlanType);*/
+												*/sessData.userID = nClientID;
+												sessData.userPWD = sPwd; //пароль нешифрованный
+												res.redirect("/cab?pt="+nIDPlanType);
 											});
 										}
 									});
