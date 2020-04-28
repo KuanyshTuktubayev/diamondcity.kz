@@ -929,7 +929,7 @@ app.post('/cab', function(req, res, next) {
 					}
 					else {
 						//1-2-2) если у спонсора есть структуры под указанным видом входа, значит пора проверить наличие нового клиента (а вдруг он уже существует и хочет зарегиться в структуре указанного вида входа?)
-						var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive, u.Email, u.Pwd 
+						var sqlClient = `SELECT cl.ID, cl.Lastname, cl.Firstname, cl.Middlename, cl.IIN, cl.Email, cl.IsActive, u.Email, u.Pwd, password('${sPwd}') PwdEntered 
 										FROM Client cl 
 										JOIN Users u on u.ID = cl.ID
 										WHERE (UCase(cl.Lastname) = UCase('${sLastname}') 
@@ -945,50 +945,6 @@ app.post('/cab', function(req, res, next) {
 							//res.send(rowsClient);
 							//return;
 							if (rowsClient.length == 0) {
-								//1-2-2-1) если клиент существует, то переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
-								var nClientID = rowsClient[0].ID;
-								var sPwd = rowsClient[0].Pwd; //пароль хранится в базе в зашифрованном виде
-								
-								//2) мы знаем, что:
-								// - спонсор есть,
-								// - у спонсора есть структура под указанным видом входа,
-								// - клиент тоже есть (уже существует),
-								//теперь проверим есть ли у клиента структура под указанным видом входа
-								
-								var sqlClStr = `select count(*) as countClStr 
-												from Struct str 
-												where 1=1 
-												and str.IDPlanType = ${nIDPlanType} 
-												and str.IDParent = ${nIDParent} 
-												and str.IDClient = ${nClientID}`;
-								let qryClStr = db.query(sqlClStr, function(errClStr, resultClStr, fieldsClStr) {
-									if (errClStr) { throw errClStr; }
-									if ((resultClStr.length > 0) || (resultClStr[0].countClStr > 0)) {
-										//2-1) если клиент старый и у него есть структура под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку
-										res.send("Такой клиент с таким спонсором уже заведен в указанном виде входа. Вот ID клиента: "+nClientID);
-										return;
-									}
-									else {
-										//2-2) если клиент новый или если клиент старый и у него нет структуры под указанным видом входа, то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
-										var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
-															values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
-										//res.send(insNewClStr);
-										//return;
-										let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
-											if (errNewClStr) { throw errNewClStr; }
-											//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
-											var nNewClStrID = resultNewClStr.insertId;
-											res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
-											return;
-											/*мы не можем перейти в кабинет, потому что в сессию не сможем сохранить пароль
-											sessData.userID = nClientID;
-											sessData.userPWD = sPwd; //пароль зашифрованный
-											res.redirect("/cab?pt="+nIDPlanType);*/
-										});
-									}
-								});
-							}
-							else {
 								//1-2-2-2) если клиента нет, то заводим его с активным статусом, затем переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
 								var insNewClient = `Insert into Client (Lastname, Firstname, Middlename, Email, IIN, RegDate, IsActive)
 													values ('${sLastname}', '${sFirstname}', '${sMiddlename}', '${sEmail}', '${sIIN}', now(), 1)`;
@@ -1028,6 +984,59 @@ app.post('/cab', function(req, res, next) {
 										res.redirect("/cab?pt="+nIDPlanType);*/
 									});
 								});
+							}
+							else {
+								//1-2-2-1) если клиент существует, то переходим в пункт 2 (проверка наличия у клиента МЛМ-структуры по выбранному вида входа)
+								var nClientID = rowsClient[0].ID;
+								var sClientFIO = rowsClient[0].Lastname +" "+ rowsClient[0].Firstname +" "+ rowsClient[0].Middlename;
+								
+								if (rowsClient[0].Pwd != rowsClient[0].PwdEntered) {
+									//если клиент существует, но его пароль неправильно введен, то дальнейшие действия бессмысленны, выкидываем ошибку
+									res.send("Клиент "+nClientID+" "+sClientFIO+" уже существует, но его пароль неправильный введен.");
+									return;
+								}
+								else {
+									//если клиент существует и был введен его правильный пароль...
+									
+									//2) мы знаем, что:
+									// - спонсор есть,
+									// - у спонсора есть структура под указанным видом входа,
+									// - клиент тоже есть (уже существует),
+									//теперь проверим есть ли у клиента структура под указанным видом входа
+									
+									var sqlClStr = `select count(*) as countClStr 
+													from Struct str 
+													where 1=1 
+													and str.IDPlanType = ${nIDPlanType} 
+													and str.IDParent = ${nIDParent} 
+													and str.IDClient = ${nClientID}`;
+									let qryClStr = db.query(sqlClStr, function(errClStr, resultClStr, fieldsClStr) {
+										if (errClStr) { throw errClStr; }
+										if ((resultClStr.length > 0) || (resultClStr[0].countClStr > 0)) {
+											//2-1) если клиент старый и у него есть структура под указанным видом входа, то дальнейшие шаги бессмысленны, выкидываем ошибку
+											res.send("Такой клиент с таким спонсором уже заведен в указанном виде входа. Вот ID клиента: "+nClientID);
+											return;
+										}
+										else {
+											//2-2) если клиент новый или если клиент старый и у него нет структуры под указанным видом входа, то надо завести его в структуре с неактивным статусом, затем переходим в личный кабинет клиента
+											var insNewClStr = `Insert into Struct (IDPlanType, IDClParent, IDClient, RegDate, IsActive)
+																values (${nIDPlanType}, ${nIDParent}, ${nClientID}, now(), 0)`;
+											//res.send(insNewClStr);
+											//return;
+											let qryNewClStr = db.query(insNewClStr, function(errNewClStr, resultNewClStr, fieldsNewClStr) {
+												if (errNewClStr) { throw errNewClStr; }
+												//если успешно завели структуру новому клиенту по указанному виду входа, то переходим в личный кабинет нового клиента
+												var nNewClStrID = resultNewClStr.insertId;
+												res.send("Клиент заведен в указанной структуре с неактивным статусом. Struct.id="+nNewClStrID);
+												return;
+												/*мы не можем перейти в кабинет, потому что в сессию не сможем сохранить пароль
+												sessData.userID = nClientID;
+												sessData.userPWD = sPwd; //пароль зашифрованный
+												res.redirect("/cab?pt="+nIDPlanType);*/
+											});
+										}
+									});
+								}
 							}
 						});
 					}
