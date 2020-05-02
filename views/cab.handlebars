@@ -3,11 +3,24 @@
 	{{#each selfItems}}
 		<p><b>{{ this.ClientTitle }}</b> {{this.Lastname}} {{this.Firstname}} {{this.Middlename}}</p>
 	{{/each}}
+	<!--
 	<div>
 		<p id="profile"><a href="#profile">Профиль</a></p>
 		<p id="chgpwd"><a href="#chgpwd">Пароль</a></p>
 		<p id="struct"><a href="#struct">MLM-структура</a></p>
 	</div>
+	-->
+	<ul class="nav nav-tabs">
+		<li class="nav-item" id="profile">
+			<a class="nav-link" href="#profile">Профиль</a>
+		</li>
+		<li class="nav-item" id="chgpwd">
+			<a class="nav-link" href="#chgpwd">Пароль</a>
+		</li>
+		<li class="nav-item" id="struct">
+			<a class="nav-link" href="#struct">MLM-структура</a>
+		</li>
+	</ul>
 	<div id="divPersonData" style="display: none;">
 		{{>persondata}}
 	</div>
